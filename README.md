@@ -10,3 +10,5 @@ Typed Shell with structured data representation.
 - <http://damnkids.posterous.com/rich-format-unix-pipes>
 - <http://www.dwheeler.com/essays/fixing-unix-linux-filenames.html>
 - <https://news.ycombinator.com/item?id=4368993>
+- <http://stuff.mit.edu/afs/sipb.mit.edu/user/yandros/doc/es-usenix-winter93.html>
+- <https://github.com/pkamenarsky/ytools>
