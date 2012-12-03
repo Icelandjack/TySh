@@ -1,19 +1,14 @@
--- TDA452 Functional programming, HT 2012
--- Lab 4
-
--- Baldur Blöndal
--- 890929-5613 (890929-T356)
--- baldurpet@gmail.com
-
--- John J. Camilleri
--- 860819-7318
--- johncam@student.chalmers.se
-
--- TySh: a typed shell
-
 module TySh where
 
--- type FilePath = String
+import Prelude hiding (lookup)
+
+import Data.IORef
+import Data.Map 
+import System.IO
+import System.Exit
+
+import Parse
+import Shell
 
 type Permissions = (Int,Int,Int)
   
@@ -27,10 +22,37 @@ data FileDetails = FileDetails {
   mimetype :: MimeType
   }
 
-u = undefined
+type Env = IORef (Map String (IORef String))
 
-ls :: FilePath -> [FileDetails]
-ls = u
+prompt :: Env -> IO String
+prompt env = do
+  putStr "TySh>>> "
+  hFlush stdout
+  getLine
 
-pwd :: FilePath
-pwd = u
+run :: ShellVal -> IO (ExitCode)
+run val = print val >> return ExitSuccess
+
+isBound :: Env -> String -> IO Bool
+isBound envRef id = readIORef envRef >>= return . member id 
+
+getVar :: Env -> String -> IO String
+getVar envRef id = do
+  env <- readIORef envRef
+  let (Just val) = lookup id env
+  readIORef val
+
+loop :: Env -> IO ()
+loop env = do
+  input <- prompt env
+  -- a :: ShellVal = Pipe [Command]
+  -- a <- readExpr input
+  shellval <- return (Pipe [Command "ls" [], Command "cat" []])
+  ret <- run shellval
+
+  loop env
+
+main :: IO ()
+main = do
+  env <- newIORef empty
+  loop env

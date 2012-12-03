@@ -6,17 +6,22 @@ import Shell
 
 -- http://legacy.cs.uu.nl/daan/download/parsec/parsec.html
 
--- words words 
-
-spaces :: Parser ()
-spaces = skipMany1 space
+-- spaces :: Parser ()
+-- spaces = skipMany1 space
 
 word :: Parser String
 word = many1 letter
 
 -- sepBy1 word (space <|> char '|')
 
+pipeParse = (do
+  skipMany space
+  w <- word
+  skipMany space
+  return w) `sepBy` (char '|')
+
 shellParse = undefined
+  
 
 -- readExpr :: String -> IO ()
 readExpr s = case parse shellParse "<interactive>" s of
