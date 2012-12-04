@@ -6,9 +6,7 @@ import Text.ParserCombinators.Parsec.Token (stringLiteral)
 import Prelude hiding (words)
 import Shell hiding (pipe)
 
--- Some useful links:
--- http://legacy.cs.uu.nl/daan/download/parsec/parsec.html
--- http://book.realworldhaskell.org/read/using-parsec.html
+-- Examples ------------------------------------------------------------------
 
 type CmdParseObj = ([String], [String])
 
@@ -22,29 +20,27 @@ convertCommand ((c:cs),ts) = Command c cs [unwords ts]
 -- A shell value contains 0 or more commands separated by the pipe | character
 pipeLine :: GenParser Char st [CmdParseObj]
 pipeLine = command `sepBy1` (pipe >> spaces)
+  where pipe = char '|'
 
--- Each command contains 1 or more words separated by spaces
--- command = words
+-- A command contains 1 or more words separated by spaces
+-- optionally followed by a type annotation
 command = do
-  w1 <- words
-  w2 <- option [] typeannot
-  return (w1,w2)
+  cmd <- words
+  ann <- option [] annotation
+  return (cmd, ann)
 
 -- Type Annotations must be capitalized
-typeannot = do
+annotation = do
   string "::"
   spaces
   capitalized `endBy1` spaces <?> "Capitalized word"
   where capitalized = upper >>= \a -> many1 letter >>= return . (a:)
 
--- Build up a list of words
+-- A list of 1 or more words separated by spaces
 words = word `endBy1` spaces
 
-word = many1 (noneOf "| ::") 
+word = many1 (noneOf "| :")
        
--- The pipe character is |
-pipe = char '|'
-
 -- Parse a string into shell value, possibly returning a parse error
 parseInput :: String -> Either ParseError PipeLine
 parseInput input =
@@ -61,4 +57,3 @@ t2 = "c1 arg arg :: t1 one | c2 :: t2 | c3 arg"
 -- Some invalid commands for testing
 x1 = "c1 arg arg | c2 | "
 x2 = "c1 arg arg :: | c2 :: t2 | c3 arg"
-
