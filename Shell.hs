@@ -13,9 +13,9 @@ import Control.Monad
 
 type Arg = String
 
-newtype Annotation = Annotation String deriving Show
+type TypeAnnot = Maybe String
 
-data Command = Command String [Arg] Annotation 
+data Command = Command String [Arg] TypeAnnot
   deriving Show
 
 data ShellVal = Pipe [Command]
