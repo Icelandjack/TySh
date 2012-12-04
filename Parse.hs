@@ -1,4 +1,4 @@
-module Parse where
+module Parse (parseShellVal) where
 
 import Text.ParserCombinators.Parsec
 
@@ -9,56 +9,30 @@ import Shell
 -- Better:
 -- http://book.realworldhaskell.org/read/using-parsec.html
 
--- A shell value contains 0 or more commands, each of which is terminated
--- by the pipe | character 
--- shellVal :: GenParser Char st [[String]]
--- shellVal = endBy command pipe
+-- Parse a shell value
+parseShellVal :: String -> Either ParseError ShellVal
+parseShellVal input = case parse shellVal "<interactive>" input of {
+  Left x -> Left x ;
+  Right strs -> Right $ convert strs
+}
 
--- Each command contains 1 or more words, separated by spaces
--- command :: GenParser Char st [String]
-shellVal = sepBy command pipe
-       
+-- convert output of successful parse into ShellVal obj
+convert :: [[String]] -> ShellVal
+convert = Pipe . map convertCommand
+
+convertCommand :: [String] -> Command
+convertCommand (c:cs) = Command c cs
+
+-- A shell value contains 0 or more commands separated by the pipe | character
+shellVal :: GenParser Char st [[String]]
+shellVal = command `sepBy1` (pipe >> spaces)
+
+-- Each command contains 1 or more words separated by spaces
+command = word `endBy1` spaces
+
 -- Build up a list of words
--- command :: GenParser Char st [String]
-command = sepBy word spaces --- TODO how to handle trailing whitespace?!
-
-word :: GenParser Char st String
-word = many1 alphaNum -- (noneOf "| ")
+word = many1 (noneOf "| ") -- alphaNum
        
 -- The pipe character is |
---pipe :: GenParser Char st Char
-pipe =
-  do
-    char '|'
-    spaces
+pipe = char '|'
 
--- Parse a shell value
---parseShellVal :: String -> Either ParseError [[String]]
-parseShellVal input = parse shellVal "(unknown)" input
-
-------------------------------------------------------------------------------
-
--- word :: Parser String
--- word = many1 letter
-
--- -- sepBy1 word (space <|> char '|')
-
--- pipeParse = (do
---   skipMany space
---   w <- words
---   skipMany space
---   return w) `sepBy` (char '|')
-
--- -- readExpr :: String -> IO ()
--- readExpr s = case parse shellParse "<interactive>" s of
---   Left err ->  undefined
---   Right val -> undefined
-
--- sentence    :: Parser [String]
--- sentence    = do{ words <- sepBy1 word separator
---                 ; oneOf ".?!"
---                 ; return words
---                 }
-                
--- separator   :: Parser ()
--- separator   = skipMany1 (space <|> char ',')
