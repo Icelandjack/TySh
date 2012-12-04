@@ -15,13 +15,23 @@ Typed Shell with structured data representation.
 
 ## Example
 ```bash
-[TySh]$ runghc Tysh.hs 
-% echo Just showing off | tr [a-z] [A-Z]
-Pipe [Command "echo" ["Just","showing","off"] [],Command "tr" ["[a-z]","[A-Z]"] []]
-JUST SHOWING OFF
+TySh> set SHELL TySh
+Pipe [Command "set" ["SHELL","TySh"] []]
 
-% quit
-[TySh]$ 
+TySh> get SHELL | tr a-z A-Z
+Pipe [Command "get" ["SHELL"] [],Command "tr" ["a-z","A-Z"] []]
+JUST TYSH
+TySh> cd /tmp
+Pipe [Command "cd" ["/tmp"] []]
+
+TySh> date | tr a-z A-Z
+Pipe [Command "date" [] [],Command "tr" ["a-z","A-Z"] []]
+TUE DEC  4 23:40:30 CET 2012
+
+TySh> set PS1 shell>
+Pipe [Command "set" ["PS1","shell>"] []]
+
+shell> 
 ```
 
 

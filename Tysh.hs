@@ -1,9 +1,9 @@
 module TySh where
 
-import Prelude hiding (lookup)
-
+import Data.Map
 import Data.IORef
-import Data.Map 
+
+import System.Directory
 import System.IO
 import System.Exit
 import System.Cmd
@@ -11,42 +11,27 @@ import Control.Monad.Trans
 
 import System.Console.Haskeline
 
-import Parse (parseShellVal)
+import Parse
 import Shell 
-
-data FileDetails = FileDetails {
-  name :: String ,
-  path :: FilePath ,
-  size :: Integer
-  }
-
-type Env = IORef (Map String (IORef String))
-
-isBound :: Env -> String -> IO Bool
-isBound envRef id = readIORef envRef >>= return . member id 
-
-getVar :: Env -> String -> IO String
-getVar envRef id = do
-  env <- readIORef envRef
-  let (Just val) = lookup id env
-  readIORef val
+import Builtin
 
 loop :: Env -> InputT IO ()
 loop env = do
-  input <- getInputLine "% "
+  prompt <- liftIO $ getDefault env "PS1" (S "%")
+
+  input <- getInputLine (case prompt of { S s -> s; I l -> show l; L l -> show l} ++ " ")
   case input of
     Nothing     -> return ()
     Just "quit" -> return ()
     Just input  -> do
-      case parseShellVal input of
+      case parseInput input of
         Left err  -> outputStrLn ("TySh: " ++ show err)
-        Right val -> outputStrLn (show val) >> liftIO (run val) >>= outputStrLn
+        Right val -> outputStrLn (show val) >> liftIO (run env val) >>= outputStrLn
       loop env
-
-  -- shellval <- return (Pipe [Command "ls" [], Command "cat" []])
-  -- ret <- run shellval
 
 main :: IO ()
 main = do
   env <- newIORef empty
+  setVar env "PS1" (S "TySh>")
+  getHomeDirectory >>= setVar env "HOME" . S
   runInputT defaultSettings (loop env)
