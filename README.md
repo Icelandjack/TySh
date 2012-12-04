@@ -13,6 +13,11 @@ Typed Shell with structured data representation.
 - <http://stuff.mit.edu/afs/sipb.mit.edu/user/yandros/doc/es-usenix-winter93.html>
 - <https://github.com/pkamenarsky/ytools>
 
+### Parsing
+
+- <http://legacy.cs.uu.nl/daan/download/parsec/parsec.html>
+- <http://book.realworldhaskell.org/read/using-parsec.html>
+
 ## Example
 ```bash
 [TySh]$ runghc Tysh.hs 

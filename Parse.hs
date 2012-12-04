@@ -5,51 +5,49 @@ import Text.ParserCombinators.Parsec
 import Prelude hiding (words)
 import Shell hiding (pipe)
 
--- Some useful links:
--- http://legacy.cs.uu.nl/daan/download/parsec/parsec.html
--- http://book.realworldhaskell.org/read/using-parsec.html
+-- Examples ------------------------------------------------------------------
 
-type CmdParseObj = ([String], [String])
-
--- Some valid commands for testing
+-- valid commands
 t1 = "c1 arg arg | c2 | c3 arg"
 t2 = "c1 arg arg :: t1 one | c2 :: t2 | c3 arg"
 
--- Some invalid commands for testing
+-- invalid commands
 x1 = "c1 arg arg | c2 | "
 x2 = "c1 arg arg :: | c2 :: t2 | c3 arg"
 
--- convert output of successful parse into ShellVal obj
-convert :: [CmdParseObj] -> ShellVal
--- convert = Pipe . map (\(c:cs, ts) -> Command c cs ts)
+------------------------------------------------------------------------------
+  
+-- Internal type returned from parsing
+type CmdParseObj = ([String], [String])
 
+-- Convert output of successful parse into ShellVal obj
+convert :: [CmdParseObj] -> ShellVal
 convert = Pipe . map convertCommand
 convertCommand ((c:cs),[]) = Command c cs []
 convertCommand ((c:cs),ts) = Command c cs [unwords ts]
 
--- A shell value contains 0 or more commands separated by the pipe | character
+-- A shell value contains 1 or more commands separated by pipes
 shellVal :: GenParser Char st [CmdParseObj]
 shellVal = command `sepBy1` (pipe >> spaces)
+  where pipe = char '|'
 
--- Each command contains 1 or more words separated by spaces
--- command = words
+-- A command contains 1 or more words separated by spaces
+-- optionally followed by a type annotation
 command = do
-  w1 <- words
-  w2 <- option [] typeannot
-  return (w1,w2)
+  cmd <- words
+  ann <- option [] annotation
+  return (cmd, ann)
 
-typeannot = string "::" >> spaces >> words
+-- A type annotation is 1 or more words prefixed with a ::
+annotation = string "::" >> spaces >> words
 
--- Build up a list of words
+-- A list of 1 or more words separated by spaces
 words = word `endBy1` spaces
-word = many1 (noneOf "| ::") -- alphaNum
+word = many1 (noneOf "| :") -- alphaNum
        
--- The pipe character is |
-pipe = char '|'
-
--- Parse a string into shell value, possibly returning a parse error
+-- Parse a string into shell value, possibly returning parseError
 parseShellVal :: String -> Either ParseError ShellVal
 parseShellVal input =
   case parse shellVal "<interactive>" input of 
-    Left x -> Left x 
-    Right strs -> Right (convert strs)
+    Left err -> Left err
+    Right s -> Right (convert s)
