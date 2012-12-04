@@ -3,7 +3,7 @@ module Parse (parseShellVal) where
 
 import Text.ParserCombinators.Parsec
 import Prelude hiding (words)
-import Shell
+import Shell hiding (pipe)
 
 -- Some useful links:
 -- http://legacy.cs.uu.nl/daan/download/parsec/parsec.html
@@ -19,20 +19,13 @@ t2 = "c1 arg arg :: t1 one | c2 :: t2 | c3 arg"
 x1 = "c1 arg arg | c2 | "
 x2 = "c1 arg arg :: | c2 :: t2 | c3 arg"
 
--- Parse a string into shell value, possibly returning a parse error
-parseShellVal :: String -> Either ParseError ShellVal
-parseShellVal input = case parse shellVal "<interactive>" input of {
-  Left x -> Left x ;
-  Right strs -> Right $ convert strs
-}
-
 -- convert output of successful parse into ShellVal obj
 convert :: [CmdParseObj] -> ShellVal
 -- convert = Pipe . map (\(c:cs, ts) -> Command c cs ts)
 
 convert = Pipe . map convertCommand
-convertCommand ((c:cs),[]) = Command c cs Nothing
-convertCommand ((c:cs),ts) = Command c cs (Just (unwords ts))
+convertCommand ((c:cs),[]) = Command c cs []
+convertCommand ((c:cs),ts) = Command c cs [unwords ts]
 
 -- A shell value contains 0 or more commands separated by the pipe | character
 shellVal :: GenParser Char st [CmdParseObj]
@@ -54,3 +47,9 @@ word = many1 (noneOf "| ::") -- alphaNum
 -- The pipe character is |
 pipe = char '|'
 
+-- Parse a string into shell value, possibly returning a parse error
+parseShellVal :: String -> Either ParseError ShellVal
+parseShellVal input =
+  case parse shellVal "<interactive>" input of 
+    Left x -> Left x 
+    Right strs -> Right (convert strs)

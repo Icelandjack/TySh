@@ -1,19 +1,15 @@
 module Shell where
 
-import System.Process
 import Control.Concurrent
-import Control.Concurrent.MVar
+import Control.Monad
+
 import System.IO
-import System.Exit
-import Text.Regex
 import System.Posix.Process
 import System.Posix.IO
 import System.Posix.Types
-import Control.Monad
 
 type Arg = String
-
-type TypeAnnot = Maybe String
+type TypeAnnot = [String]
 
 data Command = Command String [Arg] TypeAnnot
   deriving Show
@@ -21,34 +17,27 @@ data Command = Command String [Arg] TypeAnnot
 data ShellVal = Pipe [Command]
   deriving Show
 
-data Result = Result { output :: IO String, status :: IO [ProcessStatus] }
-
 type CloseFDs = MVar [Fd]
+
+data Result = Result { output :: IO String, stat :: IO [ProcessStatus] }
 
 closeFds = mapM_ (\fd -> catch (closeFd fd) (const (return ())))
 
-invoke (cmd, args) closefds input = do
+invoke (Command cmd args _) closefds input = do
   (r1, w1) <- createPipe
   (r2, w2) <- createPipe
-  
   modifyMVar_ closefds (\old -> return (old ++ [w1, r2]))
-  
   childPID <- withMVar closefds (\fds -> forkProcess (child (cmd, args) fds r1 w2))
-  
   closeFds [r1, w2]
-
   (stdinhdl, stdouthdl) <- liftM2 (,) (fdToHandle w1) (fdToHandle r2)
-  
   forkIO (hPutStr stdinhdl input >> hClose stdinhdl)
-
-  let output = hGetContents stdouthdl
-      exit   = do
+  let exit = do
         status <- getProcessStatus True False childPID
         case status of
           Nothing -> fail "Error: Nothing from getProcessStatus"
           Just ps -> removeCloseFDs closefds [w1, r2] >> return [ps]
 
-  return (Result { output = output, status = exit })
+  return (Result { output = hGetContents stdouthdl, stat = exit })
 
 child (cmd, args) closefds r1 w2 = do
   dupTo r1 stdInput
@@ -72,19 +61,18 @@ removeCloseFDs closefds removethem =
 
 --  (closefds :: MVar [Fd]) <- newMVar []
 pipe src dest closefds input = do
-  Result { output = output1, status = status1 } <- invoke' [src]  closefds input
-  Result { output = output2, status = status2 } <- invoke' dest closefds =<< output1
+  Result { output = output1, stat = status1 } <- invoke' [src]  closefds input
+  Result { output = output2, stat = status2 } <- invoke' dest closefds =<< output1
 
   return (Result output2 (liftM2 (++) status1 status2))
 
 invoke' [cmd] fds input = invoke cmd fds input
 invoke' (src:dst) fds input = pipe src dst fds input
 
-run cmd = do
+run :: ShellVal -> IO String
+run (Pipe cmds) = do
   closefds <- newMVar []
-  Result { output = output, status = status } <- invoke' cmd closefds []  
-  status >>= putStrLn . show
-  output >>= putStr
+  Result { output = output, stat = status } <- invoke' cmds closefds []  
+  output
 
-
-commands = [("/bin/ls",[]), ("/bin/cat",[])]
+-- command = [Command "ls" [] []]

@@ -7,28 +7,20 @@ import Data.Map
 import System.IO
 import System.Exit
 import System.Cmd
+import Control.Monad.Trans
 
 import System.Console.Haskeline
 
-import Parse
-import Shell hiding (run)
-
-type Permissions = (Int,Int,Int)
-  
-data MimeType = TXT | HTML | PDF | Other
+import Parse (parseShellVal)
+import Shell 
 
 data FileDetails = FileDetails {
   name :: String ,
   path :: FilePath ,
-  permissions :: Permissions ,
-  size :: Integer ,
-  mimetype :: MimeType
+  size :: Integer
   }
 
 type Env = IORef (Map String (IORef String))
-
-run :: ShellVal -> IO (ExitCode)
-run val = print val >> return ExitSuccess
 
 isBound :: Env -> String -> IO Bool
 isBound envRef id = readIORef envRef >>= return . member id 
@@ -41,17 +33,16 @@ getVar envRef id = do
 
 loop :: Env -> InputT IO ()
 loop env = do
-  minput <- getInputLine "% "
-  case minput of
+  input <- getInputLine "% "
+  case input of
     Nothing     -> return ()
     Just "quit" -> return ()
     Just input  -> do
-      outputStrLn (show input)
+      case parseShellVal input of
+        Left err  -> outputStrLn ("TySh: " ++ show err)
+        Right val -> outputStrLn (show val) >> liftIO (run val) >>= outputStrLn
       loop env
 
-  -- input <- prompt env
-  -- a :: ShellVal = Pipe [Command]
-  -- a <- readExpr input
   -- shellval <- return (Pipe [Command "ls" [], Command "cat" []])
   -- ret <- run shellval
 
