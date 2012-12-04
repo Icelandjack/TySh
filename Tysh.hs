@@ -6,9 +6,12 @@ import Data.IORef
 import Data.Map 
 import System.IO
 import System.Exit
+import System.Cmd
+
+import System.Console.Haskeline
 
 import Parse
-import Shell
+import Shell hiding (run)
 
 type Permissions = (Int,Int,Int)
   
@@ -24,12 +27,6 @@ data FileDetails = FileDetails {
 
 type Env = IORef (Map String (IORef String))
 
-prompt :: Env -> IO String
-prompt env = do
-  putStr "TySh>>> "
-  hFlush stdout
-  getLine
-
 run :: ShellVal -> IO (ExitCode)
 run val = print val >> return ExitSuccess
 
@@ -42,17 +39,23 @@ getVar envRef id = do
   let (Just val) = lookup id env
   readIORef val
 
-loop :: Env -> IO ()
+loop :: Env -> InputT IO ()
 loop env = do
-  input <- prompt env
+  minput <- getInputLine "% "
+  case minput of
+    Nothing     -> return ()
+    Just "quit" -> return ()
+    Just input  -> do
+      outputStrLn (show input)
+      loop env
+
+  -- input <- prompt env
   -- a :: ShellVal = Pipe [Command]
   -- a <- readExpr input
-  shellval <- return (Pipe [Command "ls" [], Command "cat" []])
-  ret <- run shellval
-
-  loop env
+  -- shellval <- return (Pipe [Command "ls" [], Command "cat" []])
+  -- ret <- run shellval
 
 main :: IO ()
 main = do
   env <- newIORef empty
-  loop env
+  runInputT defaultSettings (loop env)
