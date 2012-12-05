@@ -28,14 +28,14 @@ data PipeLine = Pipe [Command] deriving Show
 type CloseFDs = MVar [Fd]
 
 ------------------------------------------------------------------------------
--- Runnig Commands (Adapted from RWH)
+-- Running Commands (Adapted from RWH)
 ------------------------------------------------------------------------------
 
 closeFds = mapM_ (\fd -> catch (closeFd fd) (const (return ())))
 
 invoke env (Command cmd args ann) closefds input = 
   case lookup cmd builtin of
-    Just fn -> fn env input args 
+    Just (Utility fn _) -> fn env input args 
     Nothing -> do
       (r1, w1) <- createPipe -- stdin
       (r2, w2) <- createPipe -- stdout
@@ -43,8 +43,8 @@ invoke env (Command cmd args ann) closefds input =
   
       modifyMVar_ closefds $ \old -> return (old ++ [w1, r2, r3])
     
-      childPID <- withMVar closefds (\fds -> forkProcess (child (cmd, args) fds r1 w2 w2))
-      closeFds [r1, w2, w2]
+      childPID <- withMVar closefds (\fds -> forkProcess (child (cmd, args) fds r1 w2 w3))
+      closeFds [r1, w2, w3]
   
       (stdinh, stdouth, stderrh) <- liftM3 (,,) (fdToHandle w1) (fdToHandle r2) (fdToHandle r3)
   

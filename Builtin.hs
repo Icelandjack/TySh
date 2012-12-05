@@ -18,6 +18,13 @@ data Value = Int Integer | Str String | List [Value]
 
 data Result = Result { out :: IO String, err :: IO String, status :: IO [ProcessStatus] }
 
+data Type = Type String | TypeList [Type] | TypeVar String | Unit
+
+data Utility = Utility {
+      fn :: Env -> String -> [String] -> IO Result,
+      typ :: [Type]
+}
+
 instance Show Value where
   show (Int a)  = show a
   show (Str s)  = s
@@ -27,11 +34,11 @@ instance Show Value where
 -- Utilities
 ------------------------------------------------------------------------------
 
-builtin = fromList [("set", set)
-                   ,("get", get)
-                   ,("map", map')
-                   ,("cd",  cd)
-                   ,("ls",  ls)]
+builtin = fromList [("set", Utility set [Unit, Unit])
+                   ,("get", Utility get [Unit, TypeVar "a"])
+                   ,("map", Utility map' [])
+                   ,("cd",  Utility cd [Type "String", Unit])
+                   ,("ls",  Utility ls [Unit, Type "List"])]
 
 ret s = return (Result (return s) (return "") (return [Exited ExitSuccess]))
 void  = ret ""
