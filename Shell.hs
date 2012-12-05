@@ -99,5 +99,5 @@ run env (Pipe cmds) = do
   closefds <- newMVar []
   Result { out = output, status = status } <- invoke' env cmds closefds []
   pipestatus <- status
-  setVar env "PIPESTATUS" (L $ map (I . fromStatus) pipestatus)
+  setVar env "PIPESTATUS" (List $ map (Int . fromStatus) pipestatus)
   output

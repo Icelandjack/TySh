@@ -17,21 +17,19 @@ import Builtin
 
 loop :: Env -> InputT IO ()
 loop env = do
-  prompt <- liftIO $ getDefault env "PS1" (S "%")
-
-  input <- getInputLine (case prompt of { S s -> s; I l -> show l; L l -> show l} ++ " ")
+  prompt <- liftIO $ getDefault env "PS1" (Str "%")
+  input <- getInputLine (case prompt of { Str s -> s; Int l -> show l; List l -> show l} ++ " ")
   case input of
     Nothing     -> return ()
     Just "quit" -> return ()
     Just input  -> do
       case parseInput input of
-        Left err  -> outputStrLn ("TySh: " ++ show err)
+        Left  err -> outputStrLn ("TySh: " ++ show err)
         Right val -> outputStrLn (show val) >> liftIO (run env val) >>= outputStrLn
       loop env
 
 main :: IO ()
 main = do
-  env <- newIORef empty
-  setVar env "PS1" (S "TySh>")
-  getHomeDirectory >>= setVar env "HOME" . S
+  env <- freshEnv
+  envInit env
   runInputT defaultSettings (loop env)
