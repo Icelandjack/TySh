@@ -56,7 +56,9 @@ map' env _ ["1", _ ] = void
 cd env _ []    = getHomeDirectory >>= \dir -> cd env undefined  [dir]
 cd env _ [dir] = setCurrentDirectory dir >> void
 
-ls env = undefined
+ls env _ _ = getCurrentDirectory >>=
+             getDirectoryContents >>=
+             ret . unwords . sort
 
 ------------------------------------------------------------------------------
 -- Environment
