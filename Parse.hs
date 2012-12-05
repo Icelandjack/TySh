@@ -2,19 +2,18 @@
 module Parse (parseInput) where
 
 import Text.ParserCombinators.Parsec
-import Text.ParserCombinators.Parsec.Token (stringLiteral)
 import Prelude hiding (words)
 import Shell hiding (pipe)
 
 -- TODO ----------------------------------------------------------------------
 
--- Change ShellVal to contain [Value] not [String]
+-- Change PipeLine contain [Value] not [String]
 
 -- Examples ------------------------------------------------------------------
 
 type ParsedCommand = ([String], [String]) -- (fun:args, annotation)
 
--- Create ShellValue from parser output
+-- Create PipeLine from parser output
 convert :: [ParsedCommand] -> PipeLine
 convert = Pipe . map convertCommand
 convertCommand (c:cs, as) = Command c args annot
@@ -32,7 +31,7 @@ convertCommand (c:cs, as) = Command c args annot
 --         _ -> Str s
 --   }
 
--- A shell value contains 0 or more commands separated by the pipe | character
+-- A pipeline contains 0 or more commands separated by the pipe | character
 pipeLine :: GenParser Char st [ParsedCommand]
 pipeLine =
   command `sepBy1` (pipe >> spaces)
@@ -78,7 +77,7 @@ quoted_string = do
   <?> "quoted string"
   where dquote = char '"'
 
--- Parse a string into shell value, possibly returning a parse error
+-- Parse a string into pipeline, possibly returning a parse error
 parseInput :: String -> Either ParseError PipeLine
 parseInput input =
   case parse pipeLine "<interactive>" input of 
