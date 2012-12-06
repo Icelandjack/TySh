@@ -26,6 +26,7 @@ data Command = CommandAnn String [String] TypeAnnot -- Annotated shell command
              | Value Value                          -- Value
 
 data PipeLine = Pipe [Command] 
+
 type CloseFDs = MVar [Fd]
 
 instance Show PipeLine where
@@ -44,7 +45,7 @@ instance Show Command where
 
 closeFds = mapM_ (\fd -> catch (closeFd fd) (const (return ())))
 
-invoke env (CommandAnn cmd args ann) closefds input = 
+invoke env (Command cmd args) closefds input = 
   case lookup cmd builtin of
     Just (Utility fn _) -> fn env input args 
     Nothing -> do

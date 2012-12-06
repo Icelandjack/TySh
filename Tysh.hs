@@ -17,14 +17,26 @@ import Builtin
 
 -- Pipeline Transformation
 --   We transform the pipeline according to the annotations
+-- TODO: 
+--   % cat file ∷ PDF | head
+--   → cat file ∷ PDF | pfttotext -layout "$1" - | head
+
+--   % cat file.pdf
+--   → cat file.pdf ∷ PDF 
+
+--   % cat file.tar | tr a-z A-Z
+--   → cat file.tar ∷ Tar | tar tvf "$1" | tr a-z A-Z
 pipelineTransformation :: PipeLine -> PipeLine
 pipelineTransformation pipe = pipe
 
 -- Type erasure
 -- TODO: We transform the pipeline according to the annotations
 erase :: PipeLine -> PipeLine
-erase pipe = pipe
-
+erase (Pipe cmds) = Pipe (map eraseCmd cmds)
+  where
+    eraseCmd (CommandAnn cmd args ann) = Command cmd args
+    eraseCmd a = a
+  
 loop :: Env -> InputT IO ()
 loop env = do
   prompt <- liftIO $ getDefault env "PS1" (Str "%")
@@ -53,5 +65,3 @@ main = do
   env <- freshEnv
   envInit env
   runInputT defaultSettings (loop env)
-
-

@@ -46,13 +46,15 @@ instance Show Value where
 -- Utilities
 ------------------------------------------------------------------------------
 
-builtin = fromList [("set",   Utility set [Unit, Unit])
-                   ,("unset", Utility unset [Unit, Unit])
-                   ,("get",   Utility get [Unit, TypeVar "a"])
-                   ,("map",   Utility map' [])
-                   ,("cd",    Utility cd [Type "String", Unit])
-                   ,("ls",    Utility ls [Unit, Type "List"])
-                   ,("cat",   Utility cat [TypeVar "a", TypeVar "a"])]
+builtin = fromList [
+    ("set",   Utility set   [Unit, Unit])
+   ,("unset", Utility unset [Unit, Unit])
+   ,("get",   Utility get   [Unit, TypeVar "a"])
+   ,("map",   Utility map'  [])
+   ,("cd",    Utility cd    [Type "String", Unit])
+   ,("ls",    Utility ls    [Unit, Type "List"])
+   ,("cat",   Utility cat   [TypeVar "a", TypeVar "a"])
+   ]
 
 ret out err stat = return (Result (return out) (return err) (return [stat]))
 retSuc out       = ret out ""  (Exited ExitSuccess)
@@ -81,7 +83,10 @@ cd _ _ _        = retErr "usage: cd [dir]"
 
 ls env _ _ = getCurrentDirectory >>= getDirectoryContents >>= retSuc . unwords . sort
 
-cat env input _ = retSuc input
+cat env input []     = retSuc input
+cat env input ["-"]  = retSuc input
+cat env input [file] = readFile file >>= retSuc
+cat _   _     _      = retErr "usage: cat [files]"
 
 ------------------------------------------------------------------------------
 -- Environment
