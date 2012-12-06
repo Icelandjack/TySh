@@ -18,6 +18,13 @@ data Value = Int Integer | Str String | List [Value]
 
 data Result = Result { out :: IO String, err :: IO String, status :: IO [ProcessStatus] }
 
+data Type = Type String | TypeList [Type] | TypeVar String | Unit
+
+data Utility = Utility {
+      fn :: Env -> String -> [String] -> IO Result,
+      typ :: [Type]
+}
+
 instance Show Value where
   show (Int a)  = show a
   show (Str s)  = s
@@ -27,11 +34,11 @@ instance Show Value where
 -- Utilities
 ------------------------------------------------------------------------------
 
-builtin = fromList [("set", set)
-                   ,("get", get)
-                   ,("map", map')
-                   ,("cd",  cd)
-                   ,("ls",  ls)]
+builtin = fromList [("set", Utility set [Unit, Unit])
+                   ,("get", Utility get [Unit, TypeVar "a"])
+                   ,("map", Utility map' [])
+                   ,("cd",  Utility cd [Type "String", Unit])
+                   ,("ls",  Utility ls [Unit, Type "List"])]
 
 retSuc out = return (Result (return out) (return "") (return [Exited ExitSuccess]))
 retErr err = return (Result (return "") (return err) (return [Exited ExitSuccess]))
@@ -53,7 +60,9 @@ cd env "" [dir]  = setCurrentDirectory dir >> setVar env "PWD" (Str dir) >> void
 cd env input [] = cd env "" [input]
 cd _ _ _        = retErr "usage: cd [dir]"
 
-ls env = undefined
+ls env _ _ = getCurrentDirectory >>=
+             getDirectoryContents >>=
+             ret . unwords . sort
 
 ------------------------------------------------------------------------------
 -- Environment
