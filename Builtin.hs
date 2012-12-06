@@ -3,7 +3,7 @@ module Builtin where
 import Prelude hiding (lookup)
 
 import Data.List hiding (delete, lookup, insert)
-import Data.Map hiding (map)
+import Data.Map hiding (map, foldr)
 import Data.IORef
 
 import System.Directory
@@ -30,7 +30,7 @@ data Type = TypeList [Type]     -- [TypeVar "a", TypeVar "b"]: a → b
           | Unit                -- ()
 
 -- A Utility gets the Environment, Input, Arguments and returns the Result
-type UtilityType = Env -> String -> [String] -> IO Result
+type UtilityType = Env -> String -> [Value] -> IO Result
 
 data Utility = Utility {
  fn :: UtilityType,
@@ -67,32 +67,32 @@ retSuc out       = ret out ""  (Exited ExitSuccess)
 retErr err       = ret ""  err (Exited (ExitFailure 2))
 void             = retSuc ""
 
-set env input [id, val] = setVar env id (Str val) >> void
-set env ""    [id]      = unset env "" [id] 
-set env input [id]      = setVar env id (Str input) >> void
+set env _ [Str id, val] = setVar env id val >> void
+-- set env ""    [Str id]  = unset env "" [Str id] 
+set env input [Str id]  = setVar env id (Str input) >> void
 set _   _     _         = retErr "usage: set id [value]"
 
-unset env input [id] = unsetVar env id >> void
+unset env input [Str id] = unsetVar env id >> void
 unset _   _     _    = retErr "usage: unset id"
 
-get env _ [id] = getVar env id >>= \out -> case out of
+get env _ [Str id] = getVar env id >>= \out -> case out of
   Just value -> retSuc (show value)
   Nothing    -> void
 get env _ _    = retErr "usage: get id"
 
-map' env _ ["1", _ ] = void
+map' env _ [Int 1, _ ] = void
 
-cd env "" []     = getHomeDirectory >>= \dir -> cd env "" [dir]
-cd env "" [dir]  = setCurrentDirectory dir >> setVar env "PWD" (Str dir) >> void
-cd env input [] = cd env "" [input]
-cd _ _ _        = retErr "usage: cd [dir]"
+cd env "" []        = getHomeDirectory >>= \dir -> cd env "" [Str dir]
+cd env "" [Str dir] = setCurrentDirectory dir >> setVar env "PWD" (Str dir) >> void
+cd env input []     = cd env "" [Str input]
+cd _ _ _            = retErr "usage: cd [dir]"
 
 ls env _ _ = getCurrentDirectory >>= getDirectoryContents >>= retSuc . unwords . sort
 
-cat env input []     = retSuc input
-cat env input ["-"]  = retSuc input
-cat env input [file] = readFile file >>= retSuc
-cat _   _     _      = retErr "usage: cat [files]"
+cat env input []         = retSuc input
+cat env input [Str "-"]  = retSuc input
+cat env input [Str file] = readFile file >>= retSuc
+cat _   _     _          = retErr "usage: cat [files]"
 
 ------------------------------------------------------------------------------
 -- Environment

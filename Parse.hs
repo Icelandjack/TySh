@@ -6,28 +6,25 @@ import Prelude hiding (words)
 import Shell hiding (pipe)
 import Builtin
 
--- TODO ----------------------------------------------------------------------
-
--- Change PipeLine contain [Value] not [String]
-
--- Examples ------------------------------------------------------------------
-
+-- Internal return type from parsing stage
 type ParsedCommand = ([String], [String]) -- (fun:args, annotation)
 
 -- Create PipeLine from parser output
 convert :: [ParsedCommand] -> PipeLine
 convert = Pipe . map convertCommand
 
-
+-- Convert successful parse output into Command object
 convertCommand :: ParsedCommand -> Command
-convertCommand (cmd:args, [])  = Command    cmd args
-convertCommand (cmd:args, ann) = CommandAnn cmd args (TypeList (map Type ann))
+convertCommand (cmd:args, [])  = Command    cmd (map strToValue args)
+convertCommand (cmd:args, ann) = CommandAnn cmd (map strToValue args) (TypeList (map Type ann))
 
--- argToValue :: String -> Value
--- argToValue s = case reads s :: ([Integer], String) of {
---   (i, "") -> Int i ;
---         _ -> Str s
---   }
+strToValue :: String -> Value
+strToValue s =
+  let parse = reads s :: [(Integer, String)] in
+  case parse of {
+    (i, ""):_ -> Int i ;
+            _ -> Str s
+  }
 
 -- A pipeline contains 0 or more commands separated by the pipe | character
 pipeLine :: GenParser Char st [ParsedCommand]

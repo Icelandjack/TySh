@@ -20,10 +20,10 @@ import Builtin
 
 type TypeAnnot = Type
 
-data Command = CommandAnn String [String] TypeAnnot -- Annotated shell command
-             | Command String [String]              -- Shell command
-             | CommSub Command                      -- Command substitution
-             | Value Value                          -- Value
+data Command = CommandAnn String [Value] TypeAnnot -- Annotated shell command
+             | Command String [Value]              -- Shell command
+             -- | CommSub Command                      -- Command substitution
+             -- | Value Value                          -- Value
 
 data PipeLine = Pipe [Command] 
 
@@ -33,11 +33,11 @@ instance Show PipeLine where
   show (Pipe commands) = intercalate " | " (map show commands)
 
 instance Show Command where
-  show (Command    cmd arg)               = cmd ++ " " ++ (unwords arg) 
-  show (CommandAnn cmd arg (TypeList [])) = show (Command cmd arg)
-  show (CommandAnn cmd arg ty)            = show (Command cmd arg) ++ " ∷ " ++ show ty
-  show (CommSub command)                  = "$(" ++ show command ++ ")"
-  show (Value value)                      = show value
+  show (Command    cmd args)               = cmd ++ " " ++ (unwords (map show args))
+  show (CommandAnn cmd args (TypeList [])) = show (Command cmd args)
+  show (CommandAnn cmd args ty)            = show (Command cmd args) ++ " ∷ " ++ show ty
+  -- show (CommSub command)                  = "$(" ++ show command ++ ")"
+  -- show (Value value)                      = show value
 
 ------------------------------------------------------------------------------
 -- Running Commands (Adapted from RWH)
@@ -75,7 +75,7 @@ child (cmd, args) closefds r1 w2 w3 = do
   dupTo w2 stdOutput
   dupTo w3 stdError
   closeFds (r1:w2:w3:closefds)
-  executeFile cmd True args Nothing
+  executeFile cmd True (map show args) Nothing
 
 removeCloseFDs :: CloseFDs -> [Fd] -> IO ()
 removeCloseFDs closefds removethem =
