@@ -4,6 +4,7 @@ module Parse (parseInput) where
 import Text.ParserCombinators.Parsec
 import Prelude hiding (words)
 import Shell hiding (pipe)
+import Builtin
 
 -- TODO ----------------------------------------------------------------------
 
@@ -20,7 +21,7 @@ convert = Pipe . map convertCommand
 
 convertCommand :: ParsedCommand -> Command
 convertCommand (cmd:args, [])  = Command    cmd args
-convertCommand (cmd:args, ann) = CommandAnn cmd args ann
+convertCommand (cmd:args, ann) = CommandAnn cmd args (TypeList (map Type ann))
 
 -- argToValue :: String -> Value
 -- argToValue s = case reads s :: ([Integer], String) of {

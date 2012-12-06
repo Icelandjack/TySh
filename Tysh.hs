@@ -15,6 +15,19 @@ import Parse
 import Shell 
 import Builtin
 
+extensions :: Map String Type
+extensions = fromList [
+  ("pdf", Type "PDF"),
+  ("txt", Type "Text"),
+  ("tar", Type "TAR")
+  ]
+
+-- TODO: Add type annotations to arguments
+-- % cat hi.pdf
+-- → cat (hi.pdf ∷ PDF)
+addTypes :: Map String Type -> PipeLine -> PipeLine
+addTypes ext (Pipe pipe) = Pipe pipe
+
 -- Pipeline Transformation
 --   We transform the pipeline according to the annotations
 -- TODO: 
@@ -27,7 +40,14 @@ import Builtin
 --   % cat file.tar | tr a-z A-Z
 --   → cat file.tar ∷ Tar | tar tvf "$1" | tr a-z A-Z
 pipelineTransformation :: PipeLine -> PipeLine
-pipelineTransformation pipe = pipe
+pipelineTransformation (Pipe pipe) = Pipe (transform pipe)
+  where transform [] = []
+        transform [x] = [x]
+        transform ((CommandAnn c as (TypeList a)):xs) = undefined
+        transform ((CommandAnn c as (Type a)):xs)     = undefined
+        transform ((CommandAnn c as (TypeVar a)):xs)  = undefined
+        transform ((CommandAnn c as Unit):xs)         = undefined
+        transform ((Command    c as):xs)              = undefined
 
 -- Type erasure
 -- TODO: We transform the pipeline according to the annotations
@@ -52,11 +72,12 @@ loop env = do
           -- Val is a Pipeline
           outputStrLn (show val)
 
-          -- Transform pipeline and erase types
-          let process = pipelineTransformation . erase 
+          let process = run env                -- Evaluate the pipeline
+                      . erase                  -- Erase types
+                      . pipelineTransformation -- Transform the pipeline
+                      . addTypes extensions    -- File extensions → types
           
-          -- Run the Pipeline
-          stdout <- liftIO $ (run env . process) val
+          stdout <- liftIO (process val)
           outputStrLn stdout
       loop env
 

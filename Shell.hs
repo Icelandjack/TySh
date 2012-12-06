@@ -18,7 +18,7 @@ import System.Posix.Types
 
 import Builtin
 
-type TypeAnnot = [String]
+type TypeAnnot = Type
 
 data Command = CommandAnn String [String] TypeAnnot -- Annotated shell command
              | Command String [String]              -- Shell command
@@ -33,11 +33,11 @@ instance Show PipeLine where
   show (Pipe commands) = intercalate " | " (map show commands)
 
 instance Show Command where
-  show (Command    cmd arg)    = cmd ++ " " ++ (unwords arg) 
-  show (CommandAnn cmd arg []) = show (Command cmd arg)
-  show (CommandAnn cmd arg ty) = show (Command cmd arg) ++ " ∷ " ++ (unwords ty)
-  show (CommSub command) = "$(" ++ show command ++ ")"
-  show (Value value) = show value
+  show (Command    cmd arg)               = cmd ++ " " ++ (unwords arg) 
+  show (CommandAnn cmd arg (TypeList [])) = show (Command cmd arg)
+  show (CommandAnn cmd arg ty)            = show (Command cmd arg) ++ " ∷ " ++ show ty
+  show (CommSub command)                  = "$(" ++ show command ++ ")"
+  show (Value value)                      = show value
 
 ------------------------------------------------------------------------------
 -- Running Commands (Adapted from RWH)

@@ -23,9 +23,9 @@ data Result = Result {
 }
 
 -- TODO: Add type classes
---   extraxt ∷ (Archive a) => a -> ()
-data Type = Type String         -- "Tar", "Raw", "PDF", ...
-          | TypeList [Type]     -- [TypeVar "a", TypeVar "b"]: a → b
+--   extract ∷ (Archive a) => a -> ()
+data Type = TypeList [Type]     -- [TypeVar "a", TypeVar "b"]: a → b
+          | Type String         -- "Tar", "Raw", "PDF", ...
           | TypeVar String      -- a in a → a
           | Unit                -- ()
 
@@ -41,6 +41,12 @@ instance Show Value where
   show (Int a)  = show a
   show (Str s)  = s
   show (List v) = unwords (map show v)
+
+instance Show Type where
+  show (Type typ)       = typ
+  show (TypeList types) = intercalate " → " (map show types)
+  show (TypeVar var)    = var
+  show Unit             = "()"
 
 ------------------------------------------------------------------------------
 -- Utilities
