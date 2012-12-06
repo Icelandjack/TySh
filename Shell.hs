@@ -93,6 +93,7 @@ invoke' env (src:dst) fds input = pipe env src dst fds input
 fromStatus :: ProcessStatus -> Integer
 fromStatus (Exited ExitSuccess)   = 0
 fromStatus (Exited (ExitFailure n)) = fromIntegral n
+fromStatus _ = -9999
 
 run :: Env -> PipeLine -> IO String
 run env (Pipe cmds) = do

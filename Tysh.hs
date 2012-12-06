@@ -1,6 +1,6 @@
-module TySh where
+module Main where
 
-import Data.Map
+import Data.Map hiding (filter, map)
 import Data.IORef
 
 import System.Directory
@@ -18,7 +18,8 @@ import Builtin
 loop :: Env -> InputT IO ()
 loop env = do
   prompt <- liftIO $ getDefault env "PS1" (Str "%")
-  input <- getInputLine (case prompt of { Str s -> s; Int l -> show l; List l -> show l} ++ " ")
+  pipe   <- liftIO $ getDefault env "PIPESTATUS" (Str "")
+  input <- getInputLine (show pipe ++ ":" ++ show prompt ++ " ")
   case input of
     Nothing     -> return ()
     Just "quit" -> return ()
@@ -33,3 +34,5 @@ main = do
   env <- freshEnv
   envInit env
   runInputT defaultSettings (loop env)
+
+

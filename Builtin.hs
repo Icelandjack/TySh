@@ -21,7 +21,7 @@ data Result = Result { out :: IO String, err :: IO String, status :: IO [Process
 instance Show Value where
   show (Int a)  = show a
   show (Str s)  = s
-  show (List v) = intercalate " " (map show v)
+  show (List v) = unwords (map show v)
 
 ------------------------------------------------------------------------------
 -- Utilities
@@ -33,21 +33,25 @@ builtin = fromList [("set", set)
                    ,("cd",  cd)
                    ,("ls",  ls)]
 
-ret s = return (Result (return s) (return "") (return [Exited ExitSuccess]))
-void  = ret ""
+retSuc out = return (Result (return out) (return "") (return [Exited ExitSuccess]))
+retErr err = return (Result (return "") (return err) (return [Exited ExitSuccess]))
+void  = retSuc ""
 
-set env _ [id, val] = setVar env id (Str val) >> void
-set env _  _        = void
+set env input [id, val] = setVar env id (Str val) >> void
+set env input [id]      = setVar env id (Str input) >> void
+set _ _ _ = retErr "usage: set id [value]"
 
 get env _ [id] = getVar env id >>= \out -> case out of
-  Just value -> ret (show value)
+  Just value -> retSuc (show value)
   Nothing    -> void
-get env _ _    = void
+get env _ _    = retErr "usage: get id"
 
 map' env _ ["1", _ ] = void
 
-cd env _ []    = getHomeDirectory >>= \dir -> cd env undefined  [dir]
-cd env _ [dir] = setCurrentDirectory dir >> void
+cd env "" []     = getHomeDirectory >>= \dir -> cd env "" [dir]
+cd env "" [dir]  = setCurrentDirectory dir >> setVar env "PWD" (Str dir) >> void
+cd env input [] = cd env "" [input]
+cd _ _ _        = retErr "usage: cd [dir]"
 
 ls env = undefined
 
