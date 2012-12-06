@@ -2,7 +2,7 @@ module Builtin where
 
 import Prelude hiding (lookup)
 
-import Data.List hiding (lookup, insert)
+import Data.List hiding (delete, lookup, insert)
 import Data.Map hiding (map)
 import Data.IORef
 
@@ -16,13 +16,25 @@ import System.Posix.Types
 
 data Value = Int Integer | Str String | List [Value] 
 
-data Result = Result { out :: IO String, err :: IO String, status :: IO [ProcessStatus] }
+data Result = Result {
+  out  :: IO String,
+  err  :: IO String,
+  stat :: IO [ProcessStatus]
+}
 
-data Type = Type String | TypeList [Type] | TypeVar String | Unit
+-- TODO: Add type classes
+--   extraxt ∷ (Archive a) => a -> ()
+data Type = Type String         -- "Tar", "Raw", "PDF", ...
+          | TypeList [Type]     -- [TypeVar "a", TypeVar "b"]: a → b
+          | TypeVar String      -- a in a → a
+          | Unit                -- ()
+
+-- A Utility gets the Environment, Input, Arguments and returns the Result
+type UtilityType = Env -> String -> [String] -> IO Result
 
 data Utility = Utility {
-      fn :: Env -> String -> [String] -> IO Result,
-      typ :: [Type]
+ fn :: UtilityType,
+ typ :: [Type]
 }
 
 instance Show Value where
@@ -34,19 +46,26 @@ instance Show Value where
 -- Utilities
 ------------------------------------------------------------------------------
 
-builtin = fromList [("set", Utility set [Unit, Unit])
-                   ,("get", Utility get [Unit, TypeVar "a"])
-                   ,("map", Utility map' [])
-                   ,("cd",  Utility cd [Type "String", Unit])
-                   ,("ls",  Utility ls [Unit, Type "List"])]
+builtin = fromList [("set",   Utility set [Unit, Unit])
+                   ,("unset", Utility unset [Unit, Unit])
+                   ,("get",   Utility get [Unit, TypeVar "a"])
+                   ,("map",   Utility map' [])
+                   ,("cd",    Utility cd [Type "String", Unit])
+                   ,("ls",    Utility ls [Unit, Type "List"])
+                   ,("cat",   Utility cat [TypeVar "a", TypeVar "a"])]
 
-retSuc out = return (Result (return out) (return "") (return [Exited ExitSuccess]))
-retErr err = return (Result (return "") (return err) (return [Exited ExitSuccess]))
-void  = retSuc ""
+ret out err stat = return (Result (return out) (return err) (return [stat]))
+retSuc out       = ret out ""  (Exited ExitSuccess)
+retErr err       = ret ""  err (Exited (ExitFailure 2))
+void             = retSuc ""
 
 set env input [id, val] = setVar env id (Str val) >> void
+set env ""    [id]      = unset env "" [id] 
 set env input [id]      = setVar env id (Str input) >> void
-set _ _ _ = retErr "usage: set id [value]"
+set _   _     _         = retErr "usage: set id [value]"
+
+unset env input [id] = unsetVar env id >> void
+unset _   _     _    = retErr "usage: unset id"
 
 get env _ [id] = getVar env id >>= \out -> case out of
   Just value -> retSuc (show value)
@@ -60,9 +79,9 @@ cd env "" [dir]  = setCurrentDirectory dir >> setVar env "PWD" (Str dir) >> void
 cd env input [] = cd env "" [input]
 cd _ _ _        = retErr "usage: cd [dir]"
 
-ls env _ _ = getCurrentDirectory >>=
-             getDirectoryContents >>=
-             ret . unwords . sort
+ls env _ _ = getCurrentDirectory >>= getDirectoryContents >>= retSuc . unwords . sort
+
+cat env input _ = retSuc input
 
 ------------------------------------------------------------------------------
 -- Environment
@@ -84,12 +103,16 @@ setVar envRef id value = do
   writeIORef envRef (insert id value env)
   return value
 
+unsetVar :: Env -> String -> IO ()
+unsetVar envRef id = do
+  env <- readIORef envRef
+  writeIORef envRef (delete id env)
+  return ()  
+
 getDefault :: Env -> String -> Value -> IO Value
-getDefault env id def = do
-  val <- getVar env id 
-  case val of
-    Nothing  -> return def
-    Just val -> return val
+getDefault envRef id def = do
+  env <- readIORef envRef
+  return (findWithDefault def id env)
 
 envInit :: Env -> IO ()
 envInit env = do

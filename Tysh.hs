@@ -15,18 +15,37 @@ import Parse
 import Shell 
 import Builtin
 
+-- Pipeline Transformation
+--   We transform the pipeline according to the annotations
+pipelineTransformation :: PipeLine -> PipeLine
+pipelineTransformation pipe = pipe
+
+-- Type erasure
+-- TODO: We transform the pipeline according to the annotations
+erase :: PipeLine -> PipeLine
+erase pipe = pipe
+
 loop :: Env -> InputT IO ()
 loop env = do
   prompt <- liftIO $ getDefault env "PS1" (Str "%")
   pipe   <- liftIO $ getDefault env "PIPESTATUS" (Str "")
-  input <- getInputLine (show pipe ++ ":" ++ show prompt ++ " ")
+  input  <- getInputLine (show pipe ++ ":" ++ show prompt ++ " ")
   case input of
     Nothing     -> return ()
     Just "quit" -> return ()
     Just input  -> do
       case parseInput input of
         Left  err -> outputStrLn ("TySh: " ++ show err)
-        Right val -> outputStrLn (show val) >> liftIO (run env val) >>= outputStrLn
+        Right val -> do
+          -- Val is a Pipeline
+          outputStrLn (show val)
+
+          -- Transform pipeline and erase types
+          let process = pipelineTransformation . erase 
+          
+          -- Run the Pipeline
+          stdout <- liftIO $ (run env . process) val
+          outputStrLn stdout
       loop env
 
 main :: IO ()

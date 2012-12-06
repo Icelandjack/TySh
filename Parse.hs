@@ -16,14 +16,11 @@ type ParsedCommand = ([String], [String]) -- (fun:args, annotation)
 -- Create PipeLine from parser output
 convert :: [ParsedCommand] -> PipeLine
 convert = Pipe . map convertCommand
-convertCommand (c:cs, as) = Command c args annot
-  where
-    -- args = map argToValue cs
-    args = cs
-    annot = case as of {
-      [] -> [] ;
-      _ -> [unwords as]
-      }
+
+
+convertCommand :: ParsedCommand -> Command
+convertCommand (cmd:args, [])  = Command    cmd args
+convertCommand (cmd:args, ann) = CommandAnn cmd args ann
 
 -- argToValue :: String -> Value
 -- argToValue s = case reads s :: ([Integer], String) of {
@@ -33,9 +30,8 @@ convertCommand (c:cs, as) = Command c args annot
 
 -- A pipeline contains 0 or more commands separated by the pipe | character
 pipeLine :: GenParser Char st [ParsedCommand]
-pipeLine =
-  command `sepBy1` (pipe >> spaces)
-  <?> "pipeline"
+pipeLine = command `sepBy1` (pipe >> spaces)
+           <?> "pipeline"
   where pipe = char '|'
 
 -- A command contains 1 or more words separated by spaces

@@ -7,6 +7,7 @@ import Control.Monad
 
 import Data.Dynamic
 import Data.Map hiding (map)
+import Data.List hiding (lookup)
 import Data.IORef
 
 import System.Exit
@@ -19,13 +20,23 @@ import Builtin
 
 type TypeAnnot = [String]
 
-data Command = Command String [String] TypeAnnot -- Shell command
-             | CommSub Command                   -- Command substitution
-             | Value Value                       -- Value
-  deriving Show
+data Command = CommandAnn String [String] TypeAnnot -- Annotated shell command
+             | Command String [String]              -- Shell command
+             | CommSub Command                      -- Command substitution
+             | Value Value                          -- Value
 
-data PipeLine = Pipe [Command] deriving Show
+data PipeLine = Pipe [Command] 
 type CloseFDs = MVar [Fd]
+
+instance Show PipeLine where
+  show (Pipe commands) = intercalate " | " (map show commands)
+
+instance Show Command where
+  show (Command    cmd arg)    = cmd ++ " " ++ (unwords arg) 
+  show (CommandAnn cmd arg []) = show (Command cmd arg)
+  show (CommandAnn cmd arg ty) = show (Command cmd arg) ++ " ∷ " ++ (unwords ty)
+  show (CommSub command) = "$(" ++ show command ++ ")"
+  show (Value value) = show value
 
 ------------------------------------------------------------------------------
 -- Running Commands (Adapted from RWH)
@@ -33,7 +44,7 @@ type CloseFDs = MVar [Fd]
 
 closeFds = mapM_ (\fd -> catch (closeFd fd) (const (return ())))
 
-invoke env (Command cmd args ann) closefds input = 
+invoke env (CommandAnn cmd args ann) closefds input = 
   case lookup cmd builtin of
     Just (Utility fn _) -> fn env input args 
     Nothing -> do
@@ -50,9 +61,9 @@ invoke env (Command cmd args ann) closefds input =
   
       forkIO (hPutStr stdinh input >> hClose stdinh)
 
-      return (Result { out    = hGetContents stdouth,
-                       err    = hGetContents stderrh,
-                       status = do
+      return (Result { out  = hGetContents stdouth,
+                       err  = hGetContents stderrh,
+                       stat = do
                          status <- getProcessStatus True False childPID
                          case status of
                            Nothing -> fail "Error: Nothing from getProcessStatus"
@@ -81,8 +92,8 @@ removeCloseFDs closefds removethem =
 
 pipe :: Env -> Command -> [Command] -> CloseFDs -> String -> IO Result
 pipe env src dest closefds input = do
-  Result { out = out1, err = err1, status = stat1 } <- invoke' env [src]  closefds input
-  Result { out = out2, err = err2, status = stat2 } <- invoke' env dest closefds =<< out1
+  Result { out = out1, err = err1, stat = stat1 } <- invoke' env [src]  closefds input
+  Result { out = out2, err = err2, stat = stat2 } <- invoke' env dest closefds =<< out1
 
   return (Result out2 err2 (liftM2 (++) stat1 stat2))
 
@@ -98,7 +109,8 @@ fromStatus _ = -9999
 run :: Env -> PipeLine -> IO String
 run env (Pipe cmds) = do
   closefds <- newMVar []
-  Result { out = output, status = status } <- invoke' env cmds closefds []
-  pipestatus <- status
+  Result { out = out, err = err, stat = stat } <- invoke' env cmds closefds []
+  pipestatus <- stat
   setVar env "PIPESTATUS" (List $ map (Int . fromStatus) pipestatus)
-  output
+  err >>= putStrLn
+  out
