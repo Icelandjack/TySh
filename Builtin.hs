@@ -95,28 +95,29 @@ retErr err       = ret (Str "")  err (Exited (ExitFailure 2))
 void             = retSuc (Str "")
 
 -- Get the type of a utility
-typeof' env [Str fn] = case lookup fn builtin of
-  Just (Utility _ typ) -> retSuc (Str (show typ))
-  Nothing -> retErr $ "No built-in utility \"" ++ fn ++ "\""
+typeof' env (Str fn : _) = case lookup fn builtin of
+  Just (Utility _ typ) -> retSuc $ Str (show typ)
+  Nothing -> retSuc $ Str ("String → String (default)")
+typeof' env _            = retErr "usage: typeof UTILITY"
 
 -- Set an environment variable
-set' env [Str id, val] = setVar env id val >> void
-set' _   _             = retErr "usage: set id value"
+set' env (Str id : val : _) = setVar env id val >> void
+set' env _                  = retErr "usage: set ID VALUE"
 
 -- Unset an environment variable
-unset' env [Str id] = unsetVar env id >> void
-unset' _   _        = retErr "usage: unset id"
+unset' env (Str id : _) = unsetVar env id >> void
+unset' env _            = retErr "usage: unset ID"
 
 -- Get an environment variable
-get' env [Str id] = getVar env id >>= \out -> case out of
+get' env (Str id : _) = getVar env id >>= \out -> case out of
   Just value -> retSuc value
   Nothing    -> void
-get' env _    = retErr "usage: get id"
+get' env _            = retErr "usage: get ID"
 
 -- Change current working directory
-cd' env []        = getHomeDirectory >>= \dir -> cd' env [Str dir]
-cd' env [Str dir] = setCurrentDirectory dir >> setVar env "PWD" (Str dir) >> void
-cd' _ _           = retErr "usage: cd [dir]"
+cd' env []            = getHomeDirectory >>= \dir -> cd' env [Str dir]
+cd' env (Str dir : _) = setCurrentDirectory dir >> setVar env "PWD" (Str dir) >> void
+cd' env _             = retErr "usage: cd [DIR]"
 
 -- List files in current directory
 -- ls' env _ = getCurrentDirectory >>= getDirectoryContents >>= retSuc . unlines . sort
@@ -126,30 +127,31 @@ ls' env _ =
   retSuc . List . map Str
 
 -- Read from file or standard input
-read' env [Str file] = readFile file >>= retSuc . Str
-read' _   _          = retErr "usage: read file"
+read' env (Str file : _) = readFile file >>= retSuc . Str
+read' env _              = retErr "usage: read FILE"
 
 -- Write to file or standard output
-write' env [Str file, Str input] = writeFile file input >> void
-write' _   _                     = retErr "usage: write file input"
+write' env (Str file : Str input : _) = writeFile file input >> void
+write' env _                          = retErr "usage: write file input"
 
 -- Sort a list
 sort' env (List l : _) = retSuc (List (sort l))
+sort' env _            = retErr "usage: sort LIST"
 
 -- Pick item n from a list
 pick' env (Int n : List l : _) = retSuc (l !! n')
   where n' = fromInteger n :: Int
-pick' env _ = void
+pick' env _                    = retErr "usage: pick N LIST"
 
 -- Take first n elements from a list
 take' env (Int n : List l : _) = retSuc (List (take n' l))
   where n' = fromInteger n :: Int
-take' env _ = void
+take' env _                    = retErr "usage: take N LIST"
 
 -- Drop first n elements from a list
 drop' env (Int n : List l : _) = retSuc (List (drop n' l))
   where n' = fromInteger n :: Int
-drop' env _ = void
+drop' env _                    = retErr "usage: drop N LIST"
 
 ------------------------------------------------------------------------------
 -- Environment
