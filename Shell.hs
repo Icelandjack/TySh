@@ -43,11 +43,11 @@ data PipeLine = Pipe [Command]
 type CloseFDs = MVar [Fd]
 
 instance Show Command where
-  show (Command    cmd args)               = cmd ++ " " ++ (unwords (map show args))
-  show (CommandAnn cmd args (TypeList [])) = show (Command cmd args)
-  show (CommandAnn cmd args ty)            = show (Command cmd args) ++ " ∷ " ++ show ty
-  -- show (CommSub command)                  = "$(" ++ show command ++ ")"
-  -- show (Value value)                      = show value
+  show (Command    cmd args)           = cmd ++ " " ++ (unwords (map show args))
+  show (CommandAnn cmd args (TFun [])) = show (Command cmd args)
+  show (CommandAnn cmd args ty)        = show (Command cmd args) ++ " ∷ " ++ show ty
+  -- show (CommSub command)            = "$(" ++ show command ++ ")"
+  -- show (Value value)                = show value
 
 instance Show PipeLine where
   show (Pipe commands) = intercalate " | " (map show commands)

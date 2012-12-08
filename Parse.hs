@@ -13,7 +13,7 @@ import Shell (
 
 import Builtin (
   Value (Int, Str),
-  Type (TypeList, Type, TypeVar, Unit)
+  Type (TFun, TType)
   )
 
 -- Internal return type from parsing stage
@@ -26,7 +26,7 @@ convert = Pipe . map convertCommand
 -- Convert successful parse output into Command object
 convertCommand :: ParsedCommand -> Command
 convertCommand (cmd:args, [])  = Command    cmd (map strToValue args)
-convertCommand (cmd:args, ann) = CommandAnn cmd (map strToValue args) (TypeList (map Type ann))
+convertCommand (cmd:args, ann) = CommandAnn cmd (map strToValue args) (TFun (map TType ann))
 
 strToValue :: String -> Value
 strToValue s =

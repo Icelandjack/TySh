@@ -3,7 +3,7 @@
 
 module Builtin (
   Value (Int, Str, List),
-  Type (TypeList, Type, TypeVar, Unit),
+  Type (TFun, TType, TVar, TUnit, TString, TInt, TList),
   Env,
   Result (Result),
   Utility (Utility),
@@ -48,10 +48,13 @@ data Result = Result {
 }
 
 -- Shell-level type system
-data Type = TypeList [Type]     -- [TypeVar "a", TypeVar "b"]: a → b
-          | Type String         -- "Tar", "Raw", "PDF", ...
-          | TypeVar String      -- a in a → a
-          | Unit                -- ()
+data Type = TFun [Type]     -- [TypeVar "a", TypeVar "b"]: a → b
+          | TType String     -- "Tar", "Raw", "PDF", ...
+          | TVar String      -- a in a → a
+          | TUnit            -- ()
+          | TString          -- Str
+          | TInt             -- Int
+          | TList            -- List
 
 ------------------------------------------------------------------------------
 
@@ -61,10 +64,13 @@ instance Show Value where
   show (List v) = unwords (map show v)
 
 instance Show Type where
-  show (Type typ)       = typ
-  show (TypeList types) = intercalate " → " (map show types)
-  show (TypeVar var)    = var
-  show Unit             = "()"
+  show (TType typ)    = typ
+  show (TFun types)  = intercalate " → " (map show types)
+  show (TVar var)     = var
+  show (TString)      = "String"
+  show (TInt)         = "Int"
+  show (TList)        = "List"
+  show TUnit          = "()"
 
 ------------------------------------------------------------------------------
 -- Utilities
@@ -73,23 +79,42 @@ instance Show Type where
 -- Mapping from TySh command names to inbuilt utilities,
 -- including their in-shell type signatures
 builtin = fromList [
-    ("typeof", Utility typeof'   [])       -- typeof ::
+  -- typeof :: String → String
+  ("typeof", Utility typeof' [TString, TString])
 
-   ,("set",   Utility set'   [])           -- set :: () → ()
-   ,("unset", Utility unset' [])           -- unset :: () → ()
-   ,("get",   Utility get'   [])    -- get :: () → a
+  -- set :: String → a → ()
+  ,("set",   Utility set'   [TString, TVar "a", TUnit])
+
+  -- unset :: String → ()    
+  ,("unset", Utility unset' [TString, TUnit])
+
+  -- get :: String → a
+  ,("get",   Utility get'   [TString, TVar "a"])
+
+  -- cd :: String → ()
+  ,("cd",    Utility cd'    [TString, TUnit])
+
+  -- ls :: () → []
+  ,("ls",    Utility ls'    [TUnit, TList])
+
+  -- read :: String → String
+  ,("read",  Utility read'  [TString, TString])
+
+  -- write :: String → String → ()
+  ,("write", Utility write' [TString, TString, TUnit])
+  
+  -- sort :: [a] → [a]
+  ,("sort",  Utility sort'  [TList, TList])
    
-   ,("cd",    Utility cd'    [])  -- cd :: String → ()
-   ,("ls",    Utility ls'    [])    -- ls :: () → []
+  -- pick :: [a] → Integer → a
+  ,("pick",  Utility pick'  [TList, TInt, TVar "a"])
    
-   ,("read",   Utility read'   [])    -- cat :: a → a
-   ,("write",   Utility write'   [])    -- dog :: a → a
+  -- take :: Integer → [a] → [a]
+  ,("take",  Utility take'  [TInt, TList, TList])
    
-   ,("sort",  Utility sort' [])    -- sort :: [a] → [a]
-   ,("pick",  Utility pick' [])    -- take :: [a] → Integer → a
-   ,("take",  Utility take' [])    -- take :: Integer → [a] → [a]
-   ,("drop",  Utility drop' [])    -- drop :: Integer → [a] → [a]
-   ]
+  -- drop :: Integer → [a] → [a]
+  ,("drop",  Utility drop'  [TInt, TList, TList])
+  ]
 
 -- Helpers for constructing return values from utilities
 ret out err stat = return (Result (return out) (return err) (return [stat]))

@@ -17,9 +17,9 @@ import Builtin
 
 extensions :: Map String Type
 extensions = fromList [
-  ("pdf", Type "PDF"),
-  ("txt", Type "Text"),
-  ("tar", Type "TAR")
+  ("pdf", TType "PDF"),
+  ("txt", TType "Text"),
+  ("tar", TType "TAR")
   ]
 
 -- TODO: Add type annotations to arguments
