@@ -2,7 +2,11 @@
 -- In the use of `catch' (imported from Prelude, but defined in System.IO.Error):
 -- Deprecated: "Please use the new exceptions variant, Control.Exception.catch"
 
-module Shell where
+module Shell (
+  Command(Command, CommandAnn),
+  PipeLine(Pipe),
+  run
+  ) where
 
 import Prelude hiding (lookup)
 
@@ -20,14 +24,7 @@ import System.Posix.Process
 import System.Posix.IO
 import System.Posix.Types
 
-import Builtin (
-  Value (Int, Str, List),
-  Type (TypeList, Type, TypeVar, Unit),
-  Env,
-  Result (Result),
-  Utility (Utility),
-  builtin, out, err, stat, setVar
-  )
+import Builtin
 
 type TypeAnnot = Type
 
@@ -37,7 +34,7 @@ data Command = CommandAnn String [Value] TypeAnnot -- Annotated shell command
              -- | CommSub Command                      -- Command substitution
              -- | Value Value                          -- Value
 
--- A series of commands, e.g. date | tr a-z A-Z
+-- A series of commands, e.g. date | set DATE
 data PipeLine = Pipe [Command] 
 
 -- 
@@ -53,6 +50,52 @@ instance Show Command where
 instance Show PipeLine where
   show (Pipe commands) = intercalate " | " (map show commands)
 
+
+------------------------------------------------------------------------------
+-- Running Commands (Adapted from Real-World Haskell)
+------------------------------------------------------------------------------
+
+-- Invoke a single command
+invoke :: Env -> Command -> IO Result
+invoke env (Command cmd args) = 
+  case lookup cmd builtin of
+    Just (Utility fn _) -> fn env args 
+    Nothing -> error "non-builtin utilities"
+
+-- Invoke first command in a pipe, feeding result to second command
+pipe :: Env -> Command -> [Command] -> IO Result
+pipe env src [] = invoke env src
+pipe env src (next:rest) = do
+  Result { out = out1, err = err1, stat = stat1 } <- invoke' env [src]
+  out1' <- out1 --- clean
+  Result { out = out2, err = err2, stat = stat2 } <- invoke' env ((curry next [out1']):rest)
+  return (Result out2 err2 (liftM2 (++) stat1 stat2))
+  where
+    curry :: Command -> [Value] -> Command
+    curry (Command fn args) vals = Command fn (args ++ vals)
+
+-- Invoke a pipeline by delegating to correct function
+invoke' :: Env -> [Command] -> IO Result
+invoke' env [cmd]     = invoke env cmd
+invoke' env (src:dst) = pipe env src dst
+
+-- Convert ProcessStatus
+fromStatus :: ProcessStatus -> Integer
+fromStatus (Exited ExitSuccess)   = 0
+fromStatus (Exited (ExitFailure n)) = fromIntegral n
+fromStatus _ = -9999
+
+-- Run a pipeline
+run :: Env -> PipeLine -> IO String
+run env (Pipe cmds) = do
+  Result { out = out, err = err, stat = stat } <- invoke' env cmds
+  pipestatus <- stat
+  setVar env "PIPESTATUS" (List $ map (Int . fromStatus) pipestatus)
+  err >>= putStrLn
+  out' <- out
+  return $ show out' --- clean
+  
+{- 
 ------------------------------------------------------------------------------
 -- Running Commands (Adapted from Real-World Haskell)
 ------------------------------------------------------------------------------
@@ -129,3 +172,5 @@ run env (Pipe cmds) = do
   setVar env "PIPESTATUS" (List $ map (Int . fromStatus) pipestatus)
   err >>= putStrLn
   out
+
+-}

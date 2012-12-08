@@ -18,7 +18,13 @@ Typed Shell with structured data representation.
 - <http://legacy.cs.uu.nl/daan/download/parsec/parsec.html>
 - <http://book.realworldhaskell.org/read/using-parsec.html>
 
-## Example
+## Examples (currying)
+```bash
+TySh> ls | take 4
+TySh> ls | sort | pick 3
+```
+
+## Example (old)
 ```bash
 TySh> cd /tmp
 Pipe [Command "cd" ["/tmp"] []]

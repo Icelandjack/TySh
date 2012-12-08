@@ -40,14 +40,15 @@ addTypes ext (Pipe pipe) = Pipe pipe
 --   % cat file.tar | tr a-z A-Z
 --   → cat file.tar ∷ Tar | tar tvf "$1" | tr a-z A-Z
 pipelineTransformation :: PipeLine -> PipeLine
-pipelineTransformation (Pipe pipe) = Pipe (transform pipe)
-  where transform [] = []
-        transform [x] = [x]
-        transform ((CommandAnn c as (TypeList a)):xs) = undefined
-        transform ((CommandAnn c as (Type a)):xs)     = undefined
-        transform ((CommandAnn c as (TypeVar a)):xs)  = undefined
-        transform ((CommandAnn c as Unit):xs)         = undefined
-        transform ((Command    c as):xs)              = undefined
+pipelineTransformation = id
+-- pipelineTransformation (Pipe pipe) = Pipe (transform pipe)
+--   where transform [] = []
+--         transform [x] = [x]
+--         transform ((CommandAnn c as (TypeList a)):xs) = undefined
+--         transform ((CommandAnn c as (Type a)):xs)     = undefined
+--         transform ((CommandAnn c as (TypeVar a)):xs)  = undefined
+--         transform ((CommandAnn c as Unit):xs)         = undefined
+--         transform ((Command    c as):xs)              = undefined
 
 -- Type erasure
 -- TODO: We transform the pipeline according to the annotations
@@ -70,6 +71,7 @@ loop env = do
   input  <- getInputLine (show pipe ++ ":" ++ show prompt ++ " ")
   case input of
     Nothing     -> return ()
+    Just "q"    -> return ()
     Just "quit" -> return ()
     Just input  -> do
       case parseInput input of

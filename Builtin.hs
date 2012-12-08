@@ -1,4 +1,12 @@
-module Builtin where
+module Builtin (
+  Value (Int, Str, List),
+  Type (TypeList, Type, TypeVar, Unit),
+  Env,
+  Result (Result),
+  Utility (Utility),
+  getDefault, freshEnv, envInit,
+  builtin, out, err, stat, setVar
+  ) where
 
 import Prelude hiding (lookup)
 
@@ -18,6 +26,7 @@ import System.Posix.Types
 data Value = Int Integer
            | Str String
            | List [Value]
+           deriving (Eq, Ord)
 
 -- A Utility is an inbuilt implementation of a command-line tool
 data Utility = Utility {
@@ -73,6 +82,8 @@ builtin = fromList [
    ,("read",   Utility read'   [])    -- cat :: a → a
    ,("write",   Utility write'   [])    -- dog :: a → a
    
+   ,("sort",  Utility sort' [])    -- sort :: [a] → [a]
+   ,("pick",  Utility pick' [])    -- take :: [a] → Integer → a
    ,("take",  Utility take' [])    -- take :: Integer → [a] → [a]
    ,("drop",  Utility drop' [])    -- drop :: Integer → [a] → [a]
    ]
@@ -112,7 +123,7 @@ cd' _ _           = retErr "usage: cd [dir]"
 ls' env _ =
   getCurrentDirectory >>=
   getDirectoryContents >>=
-  retSuc . Str . unlines . sort
+  retSuc . List . map Str
 
 -- Read from file or standard input
 read' env [Str file] = readFile file >>= retSuc . Str
@@ -122,11 +133,23 @@ read' _   _          = retErr "usage: read file"
 write' env [Str file, Str input] = writeFile file input >> void
 write' _   _                     = retErr "usage: write file input"
 
--- Take/drop first n elements from a list
-take' env [Int n, List l] = retSuc (List (take n' l))
+-- Sort a list
+sort' env (List l : _) = retSuc (List (sort l))
+
+-- Pick item n from a list
+pick' env (Int n : List l : _) = retSuc (l !! n')
   where n' = fromInteger n :: Int
-drop' env [Int n, List l] = retSuc (List (drop n' l))
+pick' env _ = void
+
+-- Take first n elements from a list
+take' env (Int n : List l : _) = retSuc (List (take n' l))
   where n' = fromInteger n :: Int
+take' env _ = void
+
+-- Drop first n elements from a list
+drop' env (Int n : List l : _) = retSuc (List (drop n' l))
+  where n' = fromInteger n :: Int
+drop' env _ = void
 
 ------------------------------------------------------------------------------
 -- Environment
