@@ -1,0 +1,396 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<LINK REL="stylesheet" TYPE="text/css" HREF="kurs.css">
+<LINK REL="stylesheet" TYPE="text/css" HREF="kurs.css">
+<TITLE>Functional Programming 2012, TDA 452, DIT 142</TITLE>
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>Functional Programming 2012, TDA 452, DIT 142</H1>
+<FONT SIZE="4">
+<I>Last updated 06-12-2012</I><BR>
+</FONT></CENTER>
+
+  <UL>
+  <LI><A HREF="#toc1">Latest News</A>
+  <LI><A HREF="#toc2">Purpose of the course</A>
+  <LI><A HREF="#toc3">Practical information</A>
+  <LI><A HREF="#toc4">Contents of the course</A>
+    <UL>
+    <LI><A HREF="#toc5">Week 1:</A>
+    <LI><A HREF="#toc6">Week 2:</A>
+    <LI><A HREF="#toc7">Week 3:</A>
+    <LI><A HREF="#toc8">Week 4:</A>
+    <LI><A HREF="#toc9">Week 5:</A>
+    <LI><A HREF="#toc10">Week 6:</A>
+    <LI><A HREF="#toc11">Week 7:</A>
+    </UL>
+  <LI><A HREF="#toc12">Lab Assignments</A>
+  <LI><A HREF="#toc13">Resources</A>
+    <UL>
+    <LI><A HREF="#toc14">Haskell Documentation and Other Resources</A>
+    <LI><A HREF="#toc15">Haskell Installation (GHC) on your own machine</A>
+    <LI><A HREF="#toc16">More Reading</A>
+    <LI><A HREF="#toc17">Old exams (TDA 451)</A>
+    </UL>
+  <LI><A HREF="#toc18">Examination</A>
+  <LI><A HREF="#toc19">Course Google Group</A>
+  </UL>
+
+<P></P>
+<A NAME="toc1"></A>
+<H1>Latest News</H1>
+<UL>
+<LI><B>2012-11-27</B> Lab 4 <A HREF="labs/4/">description</A> is available
+<LI><B>2012-11-05</B> Cancelled lecture to to illness. See group for more
+info. 
+<P></P>
+<LI><B>2012-10-25</B> Lab 1 minor updates.  Deadline for submission: Wednesday 2012-10-31 
+<P></P>
+<LI><B>2012-10-23</B> Web page created. 
+Handy shortcuts 
+<P></P>
+  <UL>
+  <LI>This page: <A HREF="http://bit.ly/tda452-home">http://bit.ly/tda452-home</A>
+  <LI>The course google group: <A HREF="http://bit.ly/tda452-12">http://bit.ly/tda452-12</A> (also <A HREF="#toc19">embedded below</A>)
+  <LI>The room <A HREF="https://web.timeedit.se/chalmers_se/db1/timeedit/p/public/r.html?base=c2lkPTMmcD0yMDEyMTAyOC54JTJDMjAxMjEyMzEueCZvYmplY3RzPTIwMTk3Mi4xODImb3g9MCZ0eXBlcz0wJmZlPTAmZz1mJm11PXQmY2w9MCZjbG89MCUyQzE5MjQwNy4xODYlMkMxNjIyOTEuMTg2JmZzPTEzJmg9ZiZoMj1m">schedule</A> (<A HREF="https://web.timeedit.se/chalmers_se/db1/timeedit/p/public/r.ics?base=c2lkPTMmaD10JnA9MjAxMjEwMjgueCUyQzIwMTIxMjMxLngmb2JqZWN0cz0yMDE5NzIuMTgyJm94PTAmdHlwZXM9MCZmZT0wJmc9ZiZtdT10Jng9MA__">iCal subscription</A>)
+  </UL>
+</UL>
+
+<UL>
+<LI><B>2012-10-23</B> 
+<B>Important Info</B>:
+Lectures: Mondays 13.15 in <B>HC3</B> (until week 47 when we switch to <B>EE</B>)
+and Thursdays 10.00 in <B>HC3</B>.
+</UL>
+
+<P>
+All participants of the course are expected to join the <A HREF="http://bit.ly/tda452-12">course google group</A>.
+</P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<A NAME="toc2"></A>
+<H1>Purpose of the course</H1>
+<P>
+The course is an introduction to Functional Programming for students
+who know how to program. The students come mainly from the masters
+program at Chalmers and the University of Göteborg. Please note that you cannot include this course as part of a degree which already contains TDA555 (Introduction to Functional Programming).  The contents are too similar (although the exam for this course is more demanding). If you took TDA555 or similar please consider <A HREF="https://www.student.chalmers.se/sp/course?course_id=15974">TDA342 Advanced Functional Programming</A>
+</P>
+<A NAME="toc3"></A>
+<H1>Practical information</H1>
+<UL>
+<LI>Instructor: <A HREF="http://www.cse.chalmers.se/~dave/">David Sands</A>
+<LI>Teaching assistants: <A HREF="mailto:annl@chalmers.se">Ann Lillieström</A> 
+and <A HREF="http://www.chalmers.se/cse/EN/people/huber-simon">Simon Huber</A> 
+<LI>Text book: I am not recommending a specific textbook this year.  For those who like to follow a textbook I can recommend the following:
+<P></P>
+   <UL>
+   <LI><A HREF="http://www.cs.nott.ac.uk/~gmh/book.html">Graham Hutton: Programming in Haskell</A>. A compact and well-written 
+Haskell book that is a good fit for this course.   
+   <LI><A HREF="http://www.learnyouahaskell.com/">Learn You a Haskell for Great Good!</A>
+Online and printed versions. Very nice tutorial with humour. 
+   <LI><A HREF="http://www.cs.kent.ac.uk/people/staff/sjt/craft3e/">Simon Thompson: The Craft of Functional programming</A>. A more basic book with a slower pace but still covering most of the material in the course. I recommend the 3rd edition which has some coverage of quickCheck (a testing approach used extensively in the course). 
+ Also available at the Chalmers bookstore. 
+   <LI><A HREF="http://book.realworldhaskell.org/read/">Real World Haskell</A> Also 
+available online. This is more advanced and more oriented towards practical Haskell programming. A good book to have on the shelf if you continue with Haskell. This is the course book for the Advanced Functional Programming course. 
+   </UL>
+</UL>
+
+<UL>
+<LI><A HREF="https://web.timeedit.se/chalmers_se/db1/timeedit/p/public/r.html?base=c2lkPTMmcD0yMDEyMTAyOC54JTJDMjAxMjEyMzEueCZvYmplY3RzPTIwMTk3Mi4xODImb3g9MCZ0eXBlcz0wJmZlPTAmZz1mJm11PXQmY2w9MCZjbG89MCUyQzE5MjQwNy4xODYlMkMxNjIyOTEuMTg2JmZzPTEzJmg9ZiZoMj1m">Schedule</A>
+<LI>Discussion group: [<A HREF="http://bit.ly/tda452-12">http://bit.ly/tda452-12</A>] 
+This is for discussion among the students about the course. All kinds of
+questions (and answers) on the content of the course are welcome. You own specific problems with the labs should not  be posted here for obvious reasons.
+</UL>
+
+<UL>
+<LI>Do not ruin your reputation by cheating! 
+<P></P>
+  <UL>
+  <LI>Here are the <A HREF="http://www.chalmers.se/cse/EN/education/masters-programmes/examensarbeten/rules-templates/academic-honesty/downloadFile/file/Academic_honesty_and_integrity_at_Chalmers?nocache=1255096605.66">Chalmers rules</A> 
+  <LI>This clarification of  <A HREF="http://www.cse.chalmers.se/edu/year/2009/course/TDA956/cheating.html">coopertion vs cheating</A> applies in this course. 
+  <P></P>
+  </UL>
+<LI>Lab assignment submisson instructions:
+The labs are submitted electronically using the <A HREF="https://fire.cs.chalmers.se:8073/cgi/Fire-fp">Fire system</A>. 
+For instructions on how to use Fire, see the
+<A HREF="http://fire.cs.chalmers.se/doc/student/index.html">Student documentation for Fire</A>.
+</UL>
+
+<HR NOSHADE SIZE=1>
+<A NAME="toc4"></A>
+<H1>Contents of the course</H1>
+<P>
+These are from TDA451 2011. Content will be similar for this year. 
+Minor updates will be made as we go along. 
+</P>
+<A NAME="toc5"></A>
+<H2>Week 1:</H2>
+<UL>
+<LI>Intro to Haskell <A HREF="FPLectures/01A.pdf">(View)</A><A HREF="FPLectures/01A-printing.pdf">(Print)</A> ; 
+Tuples and Lists <A HREF="FPLectures/01B.pdf">(View)</A><A HREF="FPLectures/01B-printing.pdf">(Print)</A> ; 
+<A HREF="FPLectures/L01A.hs">(Haskell Code from Lecture)</A>
+<P></P>
+Datatypes <A HREF="FPLectures/01C.pdf">(View)</A><A HREF="FPLectures/01C-printing.pdf">(Print)</A> 
+<A HREF="FPLectures/L01C.hs">(Haskell Code 2011)</A>.
+<LI>Exercises 1: <A HREF="exercises/1/">Getting started with Haskell</A>
+<LI><A HREF="labs/1">Lab Assignment 1</A>
+</UL>
+
+<A NAME="toc6"></A>
+<H2>Week 2:</H2>
+<UL>
+<LI>Lists <A HREF="FPLectures/02A.pdf">(View)</A>
+        <A HREF="FPLectures/02A-printing.pdf">(Print)</A> 
+        <A HREF="FPLectures/L02A.hs">(Haskell Code 2011)</A>
+<LI>More Data, Lists, Classes <A HREF="FPLectures/02B.pdf">(View)</A>
+        <A HREF="FPLectures/02B-printing.pdf">(Print)</A>
+<P></P>
+        <A HREF="FPLectures/classes-quiz.pdf">(Quiz about Classes)</A>
+<LI>Higher Order Functions <A HREF="FPLectures/04A.pdf">(View)</A><A HREF="FPLectures/04A-printing.pdf">(Print)</A> <A HREF="FPLectures/Lecture04A.hs">(Code from 2011: Lecture02B)</A>
+<P></P>
+<LI>Exercises 2: <A HREF="exercises/2/">Recursion and Datatypes</A>
+<LI><A HREF="labs/2">Lab Assignment 2</A>
+</UL>
+
+<A NAME="toc7"></A>
+<H2>Week 3:</H2>
+<UL>
+<LI>Programming IO <A HREF="FPLectures/03A.pdf">(View)</A>[(Print)
+FPLectures/03A-printing.pdf] <A HREF="FPLectures/L03A.hs">(Code 2012)</A> [(Code
+2012: Hangman.hs) FPLectures/Hangman.hs] (Hutton Ch. 9; Thompson Ch. 18)
+<LI>Data Test Generators <A HREF="FPLectures/03B.pdf">(View)</A><A HREF="FPLectures/03B-printing.pdf">(Print)</A> 
+<A HREF="FPLectures/L03B.hs">(Code 2011)</A> 
+  <UL>
+  <LI><A HREF="http://www.cse.chalmers.se/~rjmh/QuickCheck/manual.html">Quick Check Manual (somewhat out of date!)</A>
+  <LI><A HREF="http://hackage.haskell.org/packages/archive/QuickCheck/2.4.0.1/doc/html/Test-QuickCheck.html">Test.QuickCheck 2.4.0.1 API doc</A>
+  <LI><A HREF="http://book.realworldhaskell.org/read/testing-and-quality-assurance.html">Testing Chapter from "Real World Haskell"</A>
+  </UL>
+<LI>Exercises 3: <A HREF="exercises/3/">Lists and List Comperhensions</A>
+</UL>
+
+<A NAME="toc8"></A>
+<H2>Week 4:</H2>
+<UL>
+<LI>Abstract Datatypes (Lecture not given in 2011)
+        <A HREF="FPLectures/02C.pdf">(View)</A>
+        <A HREF="FPLectures/02C-printing.pdf">(Print)</A> 
+        <A HREF="FPLectures/SlowQ.hs">(Code) SlowQ</A><A HREF="FPLectures/FastQ.hs">(Code) FastQ</A>
+<P></P>
+<LI>Recursive Datatypes <A HREF="FPLectures/04B.pdf">(View)</A><A HREF="FPLectures/04B-printing.pdf">(Print)</A> <A HREF="FPLectures/L04A.hs">(Code 2012)</A> <A HREF="FPLectures/L04A2.hs">(Code 2012 part 2)</A>
+<P></P>
+<LI>Parsing Expressions <A HREF="FPLectures/04B-2011.pdf">(View)</A><A HREF="FPLectures/04B-2011-printing.pdf">(Print)</A><A HREF="FPLectures/ReadExpr.hs">(2011 ReadExpr.hs)</A> 
+<A HREF="FPLectures/RefactoredParser.hs">(2011 RefactoredParser.hs)</A> <A HREF="FPLectures/RefactoredReadExpr.hs">(2011 RefactoredReadExpr.hs)</A> 
+<P></P>
+<LI>Exercises 4: <A HREF="exercises/4/">IO, Test Data and Properties</A>
+<LI><A HREF="labs/3">Lab Assignment 3</A>
+</UL>
+
+<A NAME="toc9"></A>
+<H2>Week 5:</H2>
+<UL>
+<LI>Parsing Expressions Monad Style <A HREF="FPLectures/05A-2012.pdf">(View)</A><A HREF="FPLectures/05B-2012-printing.pdf">(Print)</A> 
+<A HREF="FPLectures/ReadExprMonadic.hs">(Code 2010: ReadExprMonadic.hs)</A>
+<A HREF="FPLectures/Parsing.hs">(Code 2012: Parsing.hs)</A>
+<A HREF="FPLectures/L05A.hs">(Code 2012: L05A.hs)</A>
+<P></P>
+<LI>Reading: <A HREF="http://www.cs.nott.ac.uk/~gmh/pearl.pdf">(Tutorial article on Monadic Parsing)</A>
+</UL>
+
+<UL>
+<LI>Laziness <A HREF="FPLectures/06A-2011.pdf">(View)</A><A HREF="FPLectures/06A-2011-printing.pdf">(Print)</A> <A HREF="FPLectures/Lazy-2011.hs">(Code 2011)</A>
+</UL>
+
+<UL>
+<LI>Exercises 5: <A HREF="exercises/5/">Recursive Datatypes</A>
+</UL>
+
+<A NAME="toc10"></A>
+<H2>Week 6:</H2>
+<UL>
+<LI>No lecture on Monday 
+<LI>Parallel Programming (Not given this Monday) <A HREF="FPLectures/06B-2011.pdf">(View)</A><A HREF="FPLectures/06B-2011-printing.pdf">(Print)</A> <A HREF="FPLectures/6B-2011.zip">(Code 2011)</A>
+<P></P>
+<LI>Thursday: Guest lecture: Magnus Carlson from scrive.com <A HREF="FPLectures/Magnus_ChalmersGaloisCryptol-2012-12.pdf">Magnus's slides</A>
+</UL>
+
+<A NAME="toc11"></A>
+<H2>Week 7:</H2>
+ <UL>
+ <LI>Monday TO BE DECIDED (2011: Revision lecture.  <A HREF="oldexams/2010-12.pdf">Exam from 2010,</A> <A HREF="FPLectures/2010-12.hs">Solutions constructed in the lecture,</A> <A HREF="FPLectures/PreludeFunctions.hs">List of Some Standard Functions</A>)
+ <P></P>
+ </UL>
+
+<UL>
+<LI>Thursday: Guest lecture from John Hughes.
+</UL>
+
+<HR NOSHADE SIZE=1>
+<A NAME="toc12"></A>
+<H1>Lab Assignments</H1>
+<P>
+In the table below  you will find links to lab assignments which have
+to be handed in.  For each assignment have a <B>submission deadline</B>
+at which you must submit your solutions.  
+Your first submission is expected to be a serious attempt to complete the lab. 
+If your submission does not pass
+(incorrect or simply badly coded) then you must resubmit. You have
+until the <B>final deadline</B>. The final deadline is absolute: it is
+the last possible date to hand in your solutions. If your solutions
+are not passed you get no further chances this term.
+</P>
+<P>
+Note that the deadlines are firm and are controlled strictly by the lab reporting system. Therefore you must submit by the deadlines.
+</P>
+<TABLE BORDER="1" CELLPADDING="4">
+<TR>
+<TH></TH>
+<TH>Submission deadline</TH>
+<TH>Final deadline (parts A &amp; B)</TH>
+</TR>
+<TR>
+<TD><A HREF="labs/1/">Lab 1</A></TD>
+<TD>Wednesday 2012-10-31</TD>
+<TD>Friday 2012-11-09</TD>
+</TR>
+<TR>
+<TD><A HREF="labs/2/">Lab 2A</A></TD>
+<TD>Wednesday 2012-11-07</TD>
+</TR>
+<TR>
+<TD><A HREF="labs/2/">Lab 2B</A></TD>
+<TD>Wednesday 2012-11-14</TD>
+<TD>Friday 2012-11-24</TD>
+</TR>
+<TR>
+<TD><A HREF="labs/3/">Lab 3A</A></TD>
+<TD>Wednesday 2012-11-21</TD>
+</TR>
+<TR>
+<TD><A HREF="labs/3/">Lab 3B</A></TD>
+<TD>Wednesday 2012-11-28</TD>
+<TD>Friday 2012-12-07</TD>
+</TR>
+<TR>
+<TD><A HREF="labs/4/">Lab 4</A>|</TD>
+<TD>Wednesday 2012-12-12</TD>
+</TR>
+</TABLE>
+
+<P>
+<A HREF="labs/4/">Lab 4</A> is a mini project, to be presented to the graders on 12 December.  More information to follow!
+</P>
+<HR NOSHADE SIZE=1>
+<P></P>
+<A NAME="toc13"></A>
+<H1>Resources</H1>
+<P>
+Please read this link about <A HREF="help.html">how to get help!</A>
+</P>
+<P>
+<B>Ann</B> and <B>Simon</B> have open office hours listed below when you can drop in and ask questions about the lab assignments. 
+</P>
+<P>
+These drop-in times are valid from <B>Monday of week 2</B>.
+</P>
+<P>
+<B>TO BE UPDATED</B>
+</P>
+<TABLE BORDER="1" CELLPADDING="4">
+<TR>
+<TH></TH>
+<TH>Monday</TH>
+<TH>Tuesday</TH>
+<TH>Wednesday</TH>
+<TH>Thursday</TH>
+<TH>Friday</TH>
+</TR>
+<TR>
+<TD><B>Simon</B>  (room 6103)</TD>
+<TD></TD>
+<TD>16.00-16.45</TD>
+<TD></TD>
+<TD></TD>
+<TD>11.00 - 11.45</TD>
+</TR>
+<TR>
+<TD><B>Ann</B> (room 5461)</TD>
+<TD>11.00-11.45</TD>
+<TD></TD>
+<TD></TD>
+<TD ALIGN="center">13.15-14.00</TD>
+</TR>
+</TABLE>
+
+<A NAME="toc14"></A>
+<H2>Haskell Documentation and Other Resources</H2>
+<UL>
+<LI><A HREF="http://www.haskell.org/hoogle/">Hoogle: Search Haskell APIs by type!</A>
+<LI><A HREF="http://cs.anu.edu.au/Student/comp1100/haskell/tourofsyntax.html">Tour of Haskell syntax</A>.
+<LI><A HREF="http://www.cis.upenn.edu/~bcpierce/courses/advprog/resources/index.html">Haskell Hierarchical Libraries</A>.
+<LI><A HREF="http://ww2.cs.mu.oz.au/172/Haskell/tourofprelude.html">A Tour of the Haskell Prelude</A> (Also available <A HREF="Haskell-Prelude-Tour-A4.pdf">in PDF format</A>).
+</UL>
+
+<A NAME="toc15"></A>
+<H2>Haskell Installation (GHC) on your own machine</H2>
+<P>
+We recommend installing the <A HREF="http://www.haskell.org/platform/">Haskell Platform</A>. Quote: <I>The Haskell Platform is the easiest way to get started with programming Haskell. It comes with all you need to get up and running. Think of it as "Haskell: batteries included".</I>
+</P>
+<A NAME="toc16"></A>
+<H2>More Reading</H2>
+<UL>
+<LI><A HREF="http://www.haskell.org/">Haskell Home Page</A>. Everything about Haskell which is worth knowing (and more).
+<LI><A HREF="http://en.wikibooks.org/wiki/Haskell">The Haskell wikibook</A>.
+<LI><A HREF="http://www.haskell.org/tutorial/">Gentle Introduction to Haskell</A>. Maybe not so gentle, but concise!
+<LI><A HREF="http://blog.codeslower.com/2008/10/The-Haskell-Cheatsheet">The Haskell Cheat Sheet</A>. Too
+long to be called a cheat sheet, but a useful summary of the language.
+<LI><A HREF="http://channel9.msdn.com/shows/Going+Deep/Lecture-Series-Erik-Meijer-Functional-Programming-Fundamentals-Chapter-1/">Microsoft's new Channel9 lectures on Haskell</A>
+<LI><A HREF="http://www.paulgraham.com/paulgraham/avg.html">Beating the averages</A>. This is an entertaining article about Lisp, arguably the first functional programming language.
+</UL>
+
+<A NAME="toc17"></A>
+<H2>Old exams (TDA 451)</H2>
+<UL>
+<LI><A HREF="oldexams/2009-12-solutions.pdf">Dec 2009</A> (includes solutions)
+<LI><A HREF="oldexams/2008-12.pdf">Dec 2008</A>; <A HREF="oldexams/2008-12-sol.hs">Solutions</A>
+</UL>
+
+<P>
+Even older exams. These are a bit different from the current style, but there are some useful examples to be found.
+</P>
+<UL>
+<LI><A HREF="oldexams/20031025.pdf">October 2003</A>, <A HREF="oldexams/20040116.pdf">January 2004</A>,
+ <A HREF="oldexams/20040818.pdf">August 2004</A>,
+ <A HREF="oldexams/20041018.pdf">October 2004</A>
+<LI><A HREF="oldexams/20050114.pdf">January 2005</A>,
+ <A HREF="oldexams/06oct.pdf">October 2006</A>,
+ <A HREF="oldexams/07jan.pdf">January 2007</A>
+</UL>
+
+<A NAME="toc18"></A>
+<H1>Examination</H1>
+<P>
+The examination of the  course has two parts: the weekly assignments
+and a written exam in the end of the course. To pass the course it is
+necessary to pass all home assignments and the exam.
+The exam dates are announced on the student portal <A HREF="http://www.student.chalmers.se/">http://www.student.chalmers.se/</A> .
+</P>
+<UL>
+<LI>TDA452 Examination  : Tuesday 18 Dec 2012 at 14.00 
+Length: 4 hours
+Re-exam: April 2013 
+<P></P>
+Some advice which you shouldn't really need:
+<P></P>
+<LI>check the homepage regularly, 
+<LI>read about the topic before the lectures (then the lecture is more useful)
+<LI>solve the exercises before the exercise sessions (then the exercise
+session is more useful)
+<LI>start with your assignments early since unexpected things happens
+<LI>etc...
+</UL>
+
+<!-- html code generated by txt2tags 2.5 (http://txt2tags.sf.net) -->
+<!-- cmdline: txt2tags -t html index.t2t -->
+</BODY></HTML>
