@@ -2,6 +2,8 @@
 -- In the use of `catch' (imported from Prelude, but defined in System.IO.Error):
 -- Deprecated: "Please use the new exceptions variant, Control.Exception.catch"
 
+-- Processing of commands and pipelines
+
 module Shell (
   Command(Command, CommandAnn),
   PipeLine(Pipe),
@@ -50,7 +52,6 @@ instance Show Command where
 instance Show PipeLine where
   show (Pipe commands) = intercalate " | " (map show commands)
 
-
 ------------------------------------------------------------------------------
 -- Running Commands (Adapted from Real-World Haskell)
 ------------------------------------------------------------------------------
@@ -60,7 +61,7 @@ invoke :: Env -> Command -> IO Result
 invoke env (Command cmd args) = 
   case lookup cmd builtin of
     Just (Utility fn _) -> fn env args 
-    Nothing -> error "non-builtin utilities"
+    Nothing -> error "non-builtin utilities" --- TODO
 
 -- Invoke first command in a pipe, feeding result to second command
 pipe :: Env -> Command -> [Command] -> IO Result

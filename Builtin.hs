@@ -1,3 +1,6 @@
+
+-- Built-in utilities and handling of environments
+
 module Builtin (
   Value (Int, Str, List),
   Type (TypeList, Type, TypeVar, Unit),
@@ -156,6 +159,7 @@ drop' env _                    = retErr "usage: drop N LIST"
 ------------------------------------------------------------------------------
 -- Environment
 ------------------------------------------------------------------------------
+
 type Env = IORef (Map String Value)
 
 freshEnv :: IO Env

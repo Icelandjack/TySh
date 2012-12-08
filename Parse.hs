@@ -1,4 +1,6 @@
--- Parse shell commands
+
+-- Parsing of shell commands
+
 module Parse (parseInput) where
 
 import Text.ParserCombinators.Parsec
