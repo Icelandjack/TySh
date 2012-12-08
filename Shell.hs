@@ -1,3 +1,7 @@
+{-# OPTIONS_GHC -fno-warn-warnings-deprecations #-}
+-- In the use of `catch' (imported from Prelude, but defined in System.IO.Error):
+-- Deprecated: "Please use the new exceptions variant, Control.Exception.catch"
+
 module Shell where
 
 import Prelude hiding (lookup)
@@ -16,21 +20,28 @@ import System.Posix.Process
 import System.Posix.IO
 import System.Posix.Types
 
-import Builtin
+import Builtin (
+  Value (Int, Str, List),
+  Type (TypeList, Type, TypeVar, Unit),
+  Env,
+  Result (Result),
+  Utility (Utility),
+  builtin, out, err, stat, setVar
+  )
 
 type TypeAnnot = Type
 
+-- A single command in a pipeline, e.g. ls
 data Command = CommandAnn String [Value] TypeAnnot -- Annotated shell command
              | Command String [Value]              -- Shell command
              -- | CommSub Command                      -- Command substitution
              -- | Value Value                          -- Value
 
+-- A series of commands, e.g. date | tr a-z A-Z
 data PipeLine = Pipe [Command] 
 
+-- 
 type CloseFDs = MVar [Fd]
-
-instance Show PipeLine where
-  show (Pipe commands) = intercalate " | " (map show commands)
 
 instance Show Command where
   show (Command    cmd args)               = cmd ++ " " ++ (unwords (map show args))
@@ -39,8 +50,11 @@ instance Show Command where
   -- show (CommSub command)                  = "$(" ++ show command ++ ")"
   -- show (Value value)                      = show value
 
+instance Show PipeLine where
+  show (Pipe commands) = intercalate " | " (map show commands)
+
 ------------------------------------------------------------------------------
--- Running Commands (Adapted from RWH)
+-- Running Commands (Adapted from Real-World Haskell)
 ------------------------------------------------------------------------------
 
 closeFds = mapM_ (\fd -> catch (closeFd fd) (const (return ())))

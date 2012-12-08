@@ -56,7 +56,13 @@ erase (Pipe cmds) = Pipe (map eraseCmd cmds)
   where
     eraseCmd (CommandAnn cmd args ann) = Command cmd args
     eraseCmd a = a
-  
+
+-- One loop iteration consists of the following phases:
+--   prompt
+--   get input
+--   parse
+--   perform type transformations
+--   execute pipeline
 loop :: Env -> InputT IO ()
 loop env = do
   prompt <- liftIO $ getDefault env "PS1" (Str "%")
@@ -68,8 +74,7 @@ loop env = do
     Just input  -> do
       case parseInput input of
         Left  err -> outputStrLn ("TySh: " ++ show err)
-        Right val -> do
-          -- Val is a Pipeline
+        Right val -> do -- val :: PipeLine
           outputStrLn (show val)
 
           let process = run env                -- Evaluate the pipeline
@@ -81,6 +86,7 @@ loop env = do
           outputStrLn stdout
       loop env
 
+-- Start shell loop with a fresh environment
 main :: IO ()
 main = do
   env <- freshEnv

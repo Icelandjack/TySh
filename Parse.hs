@@ -3,8 +3,16 @@ module Parse (parseInput) where
 
 import Text.ParserCombinators.Parsec
 import Prelude hiding (words)
-import Shell hiding (pipe)
-import Builtin
+
+import Shell (
+  Command (Command, CommandAnn),
+  PipeLine (Pipe)
+  )
+
+import Builtin (
+  Value (Int, Str),
+  Type (TypeList, Type, TypeVar, Unit)
+  )
 
 -- Internal return type from parsing stage
 type ParsedCommand = ([String], [String]) -- (fun:args, annotation)
