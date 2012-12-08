@@ -26,7 +26,14 @@ data Utility = Utility {
 }
 
 -- It gets the environment, standard input, arguments and returns a Result
-type UtilityType = Env -> String -> [Value] -> IO Result
+type UtilityType = Env -> [Value] -> IO Result
+
+-- The return type of a utility
+data Result = Result {
+  out  :: IO Value,
+  err  :: IO String,
+  stat :: IO [ProcessStatus]
+}
 
 -- Shell-level type system
 data Type = TypeList [Type]     -- [TypeVar "a", TypeVar "b"]: a → b
@@ -34,12 +41,7 @@ data Type = TypeList [Type]     -- [TypeVar "a", TypeVar "b"]: a → b
           | TypeVar String      -- a in a → a
           | Unit                -- ()
 
--- The return type of a utility
-data Result = Result {
-  out  :: IO String,
-  err  :: IO String,
-  stat :: IO [ProcessStatus]
-}
+------------------------------------------------------------------------------
 
 instance Show Value where
   show (Int a)  = show a
@@ -59,76 +61,72 @@ instance Show Type where
 -- Mapping from TySh command names to inbuilt utilities,
 -- including their in-shell type signatures
 builtin = fromList [
-    ("typeof", Utility typeof   [])       -- typeof ::
+    ("typeof", Utility typeof'   [])       -- typeof ::
 
-   ,("set",   Utility set   [Unit, Unit])           -- set :: () → ()
-   ,("unset", Utility unset [Unit, Unit])           -- unset :: () → ()
-   ,("get",   Utility get   [Unit, TypeVar "a"])    -- get :: () → a
+   ,("set",   Utility set'   [])           -- set :: () → ()
+   ,("unset", Utility unset' [])           -- unset :: () → ()
+   ,("get",   Utility get'   [])    -- get :: () → a
    
-   -- ,("map",   Utility map'  [])                     -- map :: (a → b) → [a] → [b]
+   ,("cd",    Utility cd'    [])  -- cd :: String → ()
+   ,("ls",    Utility ls'    [])    -- ls :: () → []
    
-   ,("cd",    Utility cd    [Type "String", Unit])  -- cd :: String → ()
-   ,("ls",    Utility ls    [Unit, Type "List"])    -- ls :: () → []
+   ,("read",   Utility read'   [])    -- cat :: a → a
+   ,("write",   Utility write'   [])    -- dog :: a → a
    
-   ,("cat",   Utility cat   [TypeVar "a", TypeVar "a"])    -- cat :: a → a
-   ,("dog",   Utility dog   [TypeVar "a", TypeVar "a"])    -- dog :: a → a
-   
-   ,("take",  Utility take' [Type "Integer", TypeVar "List", TypeVar "List"])    -- take :: Integer → [a] → [a]
+   ,("take",  Utility take' [])    -- take :: Integer → [a] → [a]
+   ,("drop",  Utility drop' [])    -- drop :: Integer → [a] → [a]
    ]
 
 -- Helpers for constructing return values from utilities
 ret out err stat = return (Result (return out) (return err) (return [stat]))
 retSuc out       = ret out ""  (Exited ExitSuccess)
-retErr err       = ret ""  err (Exited (ExitFailure 2))
-void             = retSuc ""
+retErr err       = ret (Str "")  err (Exited (ExitFailure 2))
+void             = retSuc (Str "")
 
 -- Get the type of a utility
-typeof _ _ [Str fn] = case lookup fn builtin of
-  Just (Utility _ typ) -> retSuc (show typ)
+typeof' env [Str fn] = case lookup fn builtin of
+  Just (Utility _ typ) -> retSuc (Str (show typ))
   Nothing -> retErr $ "No built-in utility \"" ++ fn ++ "\""
 
 -- Set an environment variable
-set env _ [Str id, val] = setVar env id val >> void
--- set env ""    [Str id]  = unset env "" [Str id] 
-set env input [Str id]  = setVar env id (Str input) >> void
-set _   _     _         = retErr "usage: set id [value]"
+set' env [Str id, val] = setVar env id val >> void
+set' _   _             = retErr "usage: set id value"
 
 -- Unset an environment variable
-unset env input [Str id] = unsetVar env id >> void
-unset _   _     _    = retErr "usage: unset id"
+unset' env [Str id] = unsetVar env id >> void
+unset' _   _        = retErr "usage: unset id"
 
 -- Get an environment variable
-get env _ [Str id] = getVar env id >>= \out -> case out of
-  Just value -> retSuc (show value)
+get' env [Str id] = getVar env id >>= \out -> case out of
+  Just value -> retSuc value
   Nothing    -> void
-get env _ _    = retErr "usage: get id"
-
--- Map a function to a list
--- map' env _ [Int 1, _ ] = void
+get' env _    = retErr "usage: get id"
 
 -- Change current working directory
-cd env "" []        = getHomeDirectory >>= \dir -> cd env "" [Str dir]
-cd env "" [Str dir] = setCurrentDirectory dir >> setVar env "PWD" (Str dir) >> void
-cd env input []     = cd env "" [Str input]
-cd _ _ _            = retErr "usage: cd [dir]"
+cd' env []        = getHomeDirectory >>= \dir -> cd' env [Str dir]
+cd' env [Str dir] = setCurrentDirectory dir >> setVar env "PWD" (Str dir) >> void
+cd' _ _           = retErr "usage: cd [dir]"
 
 -- List files in current directory
-ls env _ _ = getCurrentDirectory >>= getDirectoryContents >>= retSuc . unwords . sort
+-- ls' env _ = getCurrentDirectory >>= getDirectoryContents >>= retSuc . unlines . sort
+ls' env _ =
+  getCurrentDirectory >>=
+  getDirectoryContents >>=
+  retSuc . Str . unlines . sort
 
 -- Read from file or standard input
-cat env input []         = retSuc input
-cat env input [Str "-"]  = retSuc input
-cat env input [Str file] = readFile file >>= retSuc
-cat _   _     _          = retErr "usage: cat FILE"
+read' env [Str file] = readFile file >>= retSuc . Str
+read' _   _          = retErr "usage: read file"
 
 -- Write to file or standard output
-dog env input []         = retSuc input
-dog env input [Str "-"]  = retSuc input
-dog env input [Str file] = writeFile file input >> void
-dog _   _     _          = retErr "usage: dog FILE"
+write' env [Str file, Str input] = writeFile file input >> void
+write' _   _                     = retErr "usage: write file input"
 
--- Take first n elements from a list
-take' _ _ [] = undefined
+-- Take/drop first n elements from a list
+take' env [Int n, List l] = retSuc (List (take n' l))
+  where n' = fromInteger n :: Int
+drop' env [Int n, List l] = retSuc (List (drop n' l))
+  where n' = fromInteger n :: Int
 
 ------------------------------------------------------------------------------
 -- Environment
