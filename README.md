@@ -22,6 +22,8 @@ Typed Shell with structured data representation.
 ```bash
 TySh> ls | take 4
 TySh> ls | sort | pick 3
+TySh> read test/1.txt | write test/new.txt
+TySh> read test/new.txt | set TEST
 ```
 
 ## Example (old)
