@@ -1,4 +1,3 @@
-
 -- Parsing of shell commands
 
 module Parse (parseInput) where
@@ -6,15 +5,9 @@ module Parse (parseInput) where
 import Text.ParserCombinators.Parsec
 import Prelude hiding (words)
 
-import Shell (
-  Command (Command, CommandAnn),
-  PipeLine (Pipe)
-  )
+import Shell
 
-import Builtin (
-  Value (Int, Str),
-  Type (TypeList, Type, TypeVar, Unit)
-  )
+import Builtin
 
 -- Internal return type from parsing stage
 type ParsedCommand = ([String], [String]) -- (fun:args, annotation)
@@ -26,15 +19,16 @@ convert = Pipe . map convertCommand
 -- Convert successful parse output into Command object
 convertCommand :: ParsedCommand -> Command
 convertCommand (cmd:args, [])  = Command    cmd (map strToValue args)
-convertCommand (cmd:args, ann) = CommandAnn cmd (map strToValue args) (TypeList (map Type ann))
+convertCommand (cmd:args, ann) = CommandAnn cmd (map strToArg args) (TypeList (map Type ann))
 
 strToValue :: String -> Value
 strToValue s =
-  let parse = reads s :: [(Integer, String)] in
-  case parse of {
-    (i, ""):_ -> Int i ;
-            _ -> Str s
-  }
+  case reads s of 
+    (i, ""):_ -> Int i
+    _         -> Str s
+
+strToArg :: String -> Arg
+strToArg = Arg . strToValue
 
 -- A pipeline contains 0 or more commands separated by the pipe | character
 pipeLine :: GenParser Char st [ParsedCommand]

@@ -15,7 +15,9 @@ import Parse
 import Shell 
 import Builtin
 
-extensions :: Map String Type
+type Ext = Map String Type
+
+extensions :: Ext
 extensions = fromList [
   ("pdf", Type "PDF"),
   ("txt", Type "Text"),
@@ -25,8 +27,16 @@ extensions = fromList [
 -- TODO: Add type annotations to arguments
 -- % cat hi.pdf
 -- → cat (hi.pdf ∷ PDF)
-addTypes :: Map String Type -> PipeLine -> PipeLine
-addTypes ext (Pipe pipe) = Pipe pipe
+addTypes :: Ext -> PipeLine -> PipeLine
+addTypes ext (Pipe pipe) = Pipe (map addTypeCom pipe)
+  where
+    addTypeCom :: Command -> Command
+    addTypeCom (CommandAnn cmd args ann) = undefined
+    addTypeCom (Command    cmd args)     = CommandAnn cmd (map (addTypeArg . Arg) args) (TypeList [])
+
+    addTypeArg :: Arg -> Arg
+    addTypeArg (ArgAnn (val, ty)) =
+    addTypeArg (Arg val)          = 
 
 -- Pipeline Transformation
 --   We transform the pipeline according to the annotations
@@ -35,7 +45,7 @@ addTypes ext (Pipe pipe) = Pipe pipe
 --   → cat file ∷ PDF | pfttotext -layout "$1" - | head
 
 --   % cat file.pdf
---   → cat file.pdf ∷ PDF 
+--   → cat (file.pdf ∷ PDF) :: PDF
 
 --   % cat file.tar | tr a-z A-Z
 --   → cat file.tar ∷ Tar | tar tvf "$1" | tr a-z A-Z
@@ -55,7 +65,7 @@ pipelineTransformation = id
 erase :: PipeLine -> PipeLine
 erase (Pipe cmds) = Pipe (map eraseCmd cmds)
   where
-    eraseCmd (CommandAnn cmd args ann) = Command cmd args
+    eraseCmd (CommandAnn cmd args ann) = Command cmd (map argToValue args)
     eraseCmd a = a
 
 -- One loop iteration consists of the following phases:
@@ -75,7 +85,7 @@ loop env = do
     Just "quit" -> return ()
     Just input  -> do
       case parseInput input of
-        Left  err -> outputStrLn ("TySh: " ++ show err)
+        Left  err -> return () -- outputStrLn ("TySh: " ++ show err)
         Right val -> do -- val :: PipeLine
           outputStrLn (show val)
 

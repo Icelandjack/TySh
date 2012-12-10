@@ -7,6 +7,8 @@
 module Shell (
   Command(Command, CommandAnn),
   PipeLine(Pipe),
+  Arg(ArgAnn, Arg, ann, value),
+  argToValue,
   run
   ) where
 
@@ -30,11 +32,15 @@ import Builtin
 
 type TypeAnnot = Type
 
+data Arg = ArgAnn { ann :: (Value, Type) } | Arg { value :: Value }
+
+argToValue :: Arg -> Value
+argToValue (ArgAnn (val, ty)) = val
+argToValue (Arg val) = val
+
 -- A single command in a pipeline, e.g. ls
-data Command = CommandAnn String [Value] TypeAnnot -- Annotated shell command
-             | Command String [Value]              -- Shell command
-             -- | CommSub Command                      -- Command substitution
-             -- | Value Value                          -- Value
+data Command = CommandAnn String [Arg] TypeAnnot -- Annotated shell command
+             | Command String [Value]            -- Shell command
 
 -- A series of commands, e.g. date | set DATE
 data PipeLine = Pipe [Command] 
@@ -42,12 +48,14 @@ data PipeLine = Pipe [Command]
 -- 
 type CloseFDs = MVar [Fd]
 
+instance Show Arg where
+  show (ArgAnn (val, ty)) = "(" ++ show val ++ " ∷ " ++ show ty ++ ")"
+  show (Arg val) = show val
+
 instance Show Command where
-  show (Command    cmd args)               = cmd ++ " " ++ (unwords (map show args))
-  show (CommandAnn cmd args (TypeList [])) = show (Command cmd args)
-  show (CommandAnn cmd args ty)            = show (Command cmd args) ++ " ∷ " ++ show ty
-  -- show (CommSub command)                  = "$(" ++ show command ++ ")"
-  -- show (Value value)                      = show value
+  show (Command    cmd args)               = cmd ++ " " ++ unwords (map show args)
+  show (CommandAnn cmd args (TypeList [])) = cmd ++ " " ++ unwords (map show args)
+  show (CommandAnn cmd args ty)             = show (CommandAnn cmd args (TypeList [])) ++ " ∷ " ++ show ty
 
 instance Show PipeLine where
   show (Pipe commands) = intercalate " | " (map show commands)
@@ -55,6 +63,15 @@ instance Show PipeLine where
 ------------------------------------------------------------------------------
 -- Running Commands (Adapted from Real-World Haskell)
 ------------------------------------------------------------------------------
+
+-- Run a pipeline
+run :: Env -> PipeLine -> IO String
+run env (Pipe cmds) = do
+  Result { out = out, err = err, stat = stat } <- invoke' env cmds
+  pipestatus <- stat
+  setVar env "PIPESTATUS" (List $ map (Int . fromStatus) pipestatus)
+  err >>= putStrLn
+  out >>= return . show
 
 -- Invoke a single command
 invoke :: Env -> Command -> IO Result
@@ -65,15 +82,16 @@ invoke env (Command cmd args) =
 
 -- Invoke first command in a pipe, feeding result to second command
 pipe :: Env -> Command -> [Command] -> IO Result
-pipe env src [] = invoke env src
-pipe env src (next:rest) = do
-  Result { out = out1, err = err1, stat = stat1 } <- invoke' env [src]
-  out1' <- out1 --- clean
-  Result { out = out2, err = err2, stat = stat2 } <- invoke' env ((curry next [out1']):rest)
+pipe env cmd [] = invoke env cmd
+pipe env c1 (c2:cs) = do
+  Result { out = out1, err = err1, stat = stat1 } <- invoke' env [c1]
+  c2' <- fmap (argCurry c1) out1
+  Result { out = out2, err = err2, stat = stat2 } <- invoke' env (c2':cs)
   return (Result out2 err2 (liftM2 (++) stat1 stat2))
   where
-    curry :: Command -> [Value] -> Command
-    curry (Command fn args) vals = Command fn (args ++ vals)
+    argCurry :: Command -> Value -> Command
+    argCurry (Command fn args) (Str "") = Command fn args 
+    argCurry (Command fn args) stdin    = Command fn (args ++ [stdin])
 
 -- Invoke a pipeline by delegating to correct function
 invoke' :: Env -> [Command] -> IO Result
@@ -82,19 +100,9 @@ invoke' env (src:dst) = pipe env src dst
 
 -- Convert ProcessStatus
 fromStatus :: ProcessStatus -> Integer
-fromStatus (Exited ExitSuccess)   = 0
+fromStatus (Exited ExitSuccess)     = 0
 fromStatus (Exited (ExitFailure n)) = fromIntegral n
-fromStatus _ = -9999
-
--- Run a pipeline
-run :: Env -> PipeLine -> IO String
-run env (Pipe cmds) = do
-  Result { out = out, err = err, stat = stat } <- invoke' env cmds
-  pipestatus <- stat
-  setVar env "PIPESTATUS" (List $ map (Int . fromStatus) pipestatus)
-  err >>= putStrLn
-  out' <- out
-  return $ show out' --- clean
+fromStatus _                        = -9999
   
 {- 
 ------------------------------------------------------------------------------

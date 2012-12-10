@@ -14,7 +14,7 @@ module Builtin (
 import Prelude hiding (lookup)
 
 import Data.List hiding (delete, lookup, insert)
-import Data.Map hiding (map, foldr)
+import Data.Map hiding (map)
 import Data.IORef
 
 import System.Directory
