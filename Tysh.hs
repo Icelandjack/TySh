@@ -19,9 +19,9 @@ type Ext = Map String Type
 
 extensions :: Ext
 extensions = fromList [
-  ("pdf", Type "PDF"),
-  ("txt", Type "Text"),
-  ("tar", Type "TAR")
+  ("pdf", TType "PDF"),
+  ("txt", TType "Text"),
+  ("tar", TType "TAR")
   ]
 
 -- TODO: Add type annotations to arguments
@@ -32,11 +32,11 @@ addTypes ext (Pipe pipe) = Pipe (map addTypeCom pipe)
   where
     addTypeCom :: Command -> Command
     addTypeCom (CommandAnn cmd args ann) = undefined
-    addTypeCom (Command    cmd args)     = CommandAnn cmd (map (addTypeArg . Arg) args) (TypeList [])
+    addTypeCom (Command    cmd args)     = CommandAnn cmd (map (addTypeArg . Arg) args) (TFun [])
 
     addTypeArg :: Arg -> Arg
-    addTypeArg (ArgAnn (val, ty)) =
-    addTypeArg (Arg val)          = 
+    addTypeArg (ArgAnn (val, ty)) = undefined
+    addTypeArg (Arg val)          = undefined
 
 -- Pipeline Transformation
 --   We transform the pipeline according to the annotations

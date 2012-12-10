@@ -19,7 +19,7 @@ convert = Pipe . map convertCommand
 -- Convert successful parse output into Command object
 convertCommand :: ParsedCommand -> Command
 convertCommand (cmd:args, [])  = Command    cmd (map strToValue args)
-convertCommand (cmd:args, ann) = CommandAnn cmd (map strToArg args) (TypeList (map Type ann))
+convertCommand (cmd:args, ann) = CommandAnn cmd (map strToArg args) (TFun (map TType ann))
 
 strToValue :: String -> Value
 strToValue s =

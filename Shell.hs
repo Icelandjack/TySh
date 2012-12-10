@@ -53,9 +53,9 @@ instance Show Arg where
   show (Arg val) = show val
 
 instance Show Command where
-  show (Command    cmd args)               = cmd ++ " " ++ unwords (map show args)
-  show (CommandAnn cmd args (TypeList [])) = cmd ++ " " ++ unwords (map show args)
-  show (CommandAnn cmd args ty)             = show (CommandAnn cmd args (TypeList [])) ++ " ∷ " ++ show ty
+  show (Command    cmd args)           = cmd ++ " " ++ unwords (map show args)
+  show (CommandAnn cmd args (TFun [])) = cmd ++ " " ++ unwords (map show args)
+  show (CommandAnn cmd args ty)        = show (CommandAnn cmd args (TFun [])) ++ " ∷ " ++ show ty
 
 instance Show PipeLine where
   show (Pipe commands) = intercalate " | " (map show commands)
