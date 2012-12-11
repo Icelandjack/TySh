@@ -22,7 +22,6 @@ data Result = Result {
   stat :: IO [ProcessStatus]
 }
 
--- TODO: Add type classes
 --   extract ∷ (Archive a) => a -> ()
 data Type = TypeList [Type]     -- [TypeVar "a", TypeVar "b"]: a → b
           | Type String         -- "Tar", "Raw", "PDF", ...
