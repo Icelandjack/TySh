@@ -45,6 +45,7 @@ run env (Pipe cmds) = do
 
 -- Invoke a single command
 invoke :: Env -> Command -> IO Result
+invoke env (CommandAnn cmd args _) = invoke env (Command cmd args)
 invoke env (Command cmd args) = 
   case lookup cmd builtin of
     Just (Utility fn _) -> fn env args 
@@ -66,16 +67,18 @@ pipe env c1 (c2:cs) = do
   Result { out = out2, err = err2, stat = stat2 } <- invoke' env (c2':cs)
   return (Result out2 err2 (stat1 ++ stat2))
   where
+    -- Add output of one command to arg list of another
     argCurry :: Command -> Value -> Command
     argCurry (Command fn args) (Str "") = Command fn args 
     argCurry (Command fn args) stdin    = Command fn (args ++ [stdin])
 
 -- Invoke a pipeline by delegating to correct function
 invoke' :: Env -> [Command] -> IO Result
+invoke' _   []        = void
 invoke' env [cmd]     = invoke env cmd
 invoke' env (src:dst) = pipe env src dst
 
--- Convert ProcessStatus
+-- Convert ExitCode
 fromExitCode :: ExitCode -> Integer
 fromExitCode (ExitSuccess)   = 0
 fromExitCode (ExitFailure n) = fromIntegral n

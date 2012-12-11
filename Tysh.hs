@@ -22,7 +22,7 @@ extensions = fromList [
 -- % cat hi.pdf
 -- → cat (hi.pdf ∷ PDF)
 addTypes :: Ext -> PipeLine -> PipeLine
-addTypes e = id
+addTypes _ = id
 -- addTypes ext (Pipe pipe) = Pipe (map addTypeCom pipe)
 --   where
 --     addTypeCom :: Command -> Command
@@ -60,7 +60,7 @@ pipelineTransformation = id
 erase :: PipeLine -> PipeLine
 erase (Pipe cmds) = Pipe (map eraseCmd cmds)
   where
-    eraseCmd (CommandAnn cmd args ann) = Command cmd args
+    eraseCmd (CommandAnn cmd args _) = Command cmd args
     eraseCmd a = a
 
 -- One loop iteration consists of the following phases:
@@ -78,9 +78,9 @@ loop env = do
     Nothing     -> return ()
     Just "q"    -> return ()
     Just "quit" -> return ()
-    Just input  -> do
-      case parseInput input of
-        Left  err -> return () -- outputStrLn ("TySh: " ++ show err)
+    Just line  -> do
+      case parseInput line of
+        Left  err -> outputStrLn ("Input error: " ++ show err)
         Right val -> do -- val :: PipeLine
           -- outputStrLn (show val)
           let process = run env                -- Evaluate the pipeline

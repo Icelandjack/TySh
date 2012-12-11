@@ -20,7 +20,9 @@ convert = Pipe . map convertCommand
 convertCommand :: ParsedCommand -> Command
 convertCommand (cmd:args, [])  = Command    cmd (map strToValue args)
 convertCommand (cmd:args, ann) = CommandAnn cmd (map strToValue args) (TFun (map TType ann))
+convertCommand ([],       _)   = error "Cannot convert empty command"
 
+-- Try to parse a string as Int, otherwise Str
 strToValue :: String -> Value
 strToValue s =
   case reads s of 
@@ -81,11 +83,12 @@ parseInput input =
 
 ------------------------------------------------------------------------------
 -- Testing
+------------------------------------------------------------------------------
 
--- Some valid commands for testing
-t1 = "c1 arg \"hello world\" | c2 | c3 arg"
-t2 = "c1 arg arg :: Type One | c2 :: Type2 | c3 arg"
+-- -- valid
+-- t1 = "c1 arg \"hello world\" | c2 | c3 arg"
+-- t2 = "c1 arg arg :: Type One | c2 :: Type2 | c3 arg"
 
--- Some invalid commands for testing
-x1 = "c1 arg arg | c2 | "
-x2 = "c1 arg arg :: | c2 :: t2 | c3 arg"
+-- -- invalid
+-- x1 = "c1 arg arg | c2 | "
+-- x2 = "c1 arg arg :: | c2 :: t2 | c3 arg"
