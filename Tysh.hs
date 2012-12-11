@@ -1,14 +1,8 @@
 module Main where
 
 import Data.Map hiding (filter, map)
-import Data.IORef
 
-import System.Directory
-import System.IO
-import System.Exit
-import System.Cmd
 import Control.Monad.Trans
-
 import System.Console.Haskeline
 
 import Parse
@@ -103,4 +97,5 @@ main :: IO ()
 main = do
   env <- freshEnv
   envInit env
+  putStrLn "Welcome to TySh! Use 'quit' or 'q' exit the shell."
   runInputT defaultSettings (loop env)

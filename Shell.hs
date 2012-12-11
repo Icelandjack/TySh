@@ -10,16 +10,10 @@ module Shell (
 
 import Prelude hiding (lookup)
 
-import Control.Concurrent
-import Control.Monad
-
-import Data.Dynamic
 import Data.Map hiding (map)
 import Data.List hiding (lookup)
-import Data.IORef
 
 import System.Exit
-import System.IO
 import System.Process (readProcessWithExitCode)
 
 import Builtin

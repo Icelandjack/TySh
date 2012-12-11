@@ -19,8 +19,6 @@ import Data.IORef
 import System.Directory
 import System.Environment
 import System.Exit
-import System.IO
-import System.Process
 
 -- Type of arguments in the shell
 data Value = Int Integer
