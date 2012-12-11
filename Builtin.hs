@@ -1,4 +1,3 @@
-
 -- Built-in utilities and handling of environments
 
 module Builtin (
@@ -14,16 +13,14 @@ module Builtin (
 import Prelude hiding (lookup)
 
 import Data.List hiding (delete, lookup, insert)
-import Data.Map hiding (map)
+import Data.Map hiding (map, foldr)
 import Data.IORef
 
 import System.Directory
 import System.Environment
 import System.Exit
 import System.IO
-import System.Posix.Process
-import System.Posix.IO
-import System.Posix.Types
+import System.Process
 
 -- Type of arguments in the shell
 data Value = Int Integer
@@ -42,9 +39,9 @@ type UtilityType = Env -> [Value] -> IO Result
 
 -- The return type of a utility
 data Result = Result {
-  out  :: IO Value,
-  err  :: IO String,
-  stat :: IO [ProcessStatus]
+  out  :: Value,
+  err  :: String,
+  stat :: [ExitCode]
 }
 
 -- Shell-level type system
@@ -117,9 +114,10 @@ builtin = fromList [
   ]
 
 -- Helpers for constructing return values from utilities
-ret out err stat = return (Result (return out) (return err) (return [stat]))
-retSuc out       = ret out ""  (Exited ExitSuccess)
-retErr err       = ret (Str "")  err (Exited (ExitFailure 2))
+-- ret out err stat = return (Result (return out) (return err) (return [stat]))
+ret out err stat = return (Result out err [stat])
+retSuc out       = ret out ""  (ExitSuccess)
+retErr err       = ret (Str "")  err (ExitFailure 2)
 void             = retSuc (Str "")
 
 -- Get the type of a utility

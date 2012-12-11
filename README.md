@@ -18,12 +18,19 @@ Typed Shell with structured data representation.
 - <http://legacy.cs.uu.nl/daan/download/parsec/parsec.html>
 - <http://book.realworldhaskell.org/read/using-parsec.html>
 
-## Examples (currying)
+## Examples - piping/currying between built-in utilities
 ```bash
 TySh> ls | take 4
 TySh> ls | sort | pick 3
 TySh> read test/1.txt | write test/new.txt
 TySh> read test/new.txt | set TEST
+```
+
+## Examples - piping/currying between built-in and system utilities
+```bash
+TySh> read test/1.txt | tr a-z A-Z
+TySh> date | set TEST
+TySh> date | tr a-z A-Z
 ```
 
 ## Example (old)

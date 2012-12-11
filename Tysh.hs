@@ -28,15 +28,16 @@ extensions = fromList [
 -- % cat hi.pdf
 -- → cat (hi.pdf ∷ PDF)
 addTypes :: Ext -> PipeLine -> PipeLine
-addTypes ext (Pipe pipe) = Pipe (map addTypeCom pipe)
-  where
-    addTypeCom :: Command -> Command
-    addTypeCom (CommandAnn cmd args ann) = undefined
-    addTypeCom (Command    cmd args)     = CommandAnn cmd (map (addTypeArg . Arg) args) (TFun [])
+addTypes e = id
+-- addTypes ext (Pipe pipe) = Pipe (map addTypeCom pipe)
+--   where
+--     addTypeCom :: Command -> Command
+--     addTypeCom (CommandAnn cmd args ann) = undefined
+--     addTypeCom (Command    cmd args)     = CommandAnn cmd (map (addTypeArg . Arg) args) (TFun [])
 
-    addTypeArg :: Arg -> Arg
-    addTypeArg (ArgAnn (val, ty)) = undefined
-    addTypeArg (Arg val)          = undefined
+--     addTypeArg :: Arg -> Arg
+--     addTypeArg (ArgAnn (val, ty)) = undefined
+--     addTypeArg (Arg val)          = undefined
 
 -- Pipeline Transformation
 --   We transform the pipeline according to the annotations
@@ -87,8 +88,7 @@ loop env = do
       case parseInput input of
         Left  err -> return () -- outputStrLn ("TySh: " ++ show err)
         Right val -> do -- val :: PipeLine
-          outputStrLn (show val)
-
+          -- outputStrLn (show val)
           let process = run env                -- Evaluate the pipeline
                       . erase                  -- Erase types
                       . pipelineTransformation -- Transform the pipeline
