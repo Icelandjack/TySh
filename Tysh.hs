@@ -60,7 +60,7 @@ pipelineTransformation = id
 erase :: PipeLine -> PipeLine
 erase (Pipe cmds) = Pipe (map eraseCmd cmds)
   where
-    eraseCmd (CommandAnn cmd args ann) = Command cmd (map argToValue args)
+    eraseCmd (CommandAnn cmd args ann) = Command cmd args
     eraseCmd a = a
 
 -- One loop iteration consists of the following phases:

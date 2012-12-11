@@ -19,16 +19,13 @@ convert = Pipe . map convertCommand
 -- Convert successful parse output into Command object
 convertCommand :: ParsedCommand -> Command
 convertCommand (cmd:args, [])  = Command    cmd (map strToValue args)
-convertCommand (cmd:args, ann) = CommandAnn cmd (map strToArg args) (TFun (map TType ann))
+convertCommand (cmd:args, ann) = CommandAnn cmd (map strToValue args) (TFun (map TType ann))
 
 strToValue :: String -> Value
 strToValue s =
   case reads s of 
     (i, ""):_ -> Int i
     _         -> Str s
-
-strToArg :: String -> Arg
-strToArg = Arg . strToValue
 
 -- A pipeline contains 0 or more commands separated by the pipe | character
 pipeLine :: GenParser Char st [ParsedCommand]

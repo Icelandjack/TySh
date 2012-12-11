@@ -3,8 +3,6 @@
 module Shell (
   Command(Command, CommandAnn),
   PipeLine(Pipe),
-  Arg(ArgAnn, Arg, ann, value),
-  argToValue,
   run
   ) where
 
@@ -18,24 +16,12 @@ import System.Process (readProcessWithExitCode)
 
 import Builtin
 
-type TypeAnnot = Type
-
-data Arg = ArgAnn { ann :: (Value, Type) } | Arg { value :: Value }
-
-argToValue :: Arg -> Value
-argToValue (ArgAnn (val, ty)) = val
-argToValue (Arg val) = val
-
 -- A single command in a pipeline, e.g. ls
-data Command = CommandAnn String [Arg] TypeAnnot -- Annotated shell command
-             | Command String [Value]            -- Shell command
+data Command = CommandAnn String [Value] Type  -- Annotated shell command
+             | Command String [Value]          -- Shell command
 
 -- A series of commands, e.g. date | set DATE
 data PipeLine = Pipe [Command] 
-
-instance Show Arg where
-  show (ArgAnn (val, ty)) = "(" ++ show val ++ " ∷ " ++ show ty ++ ")"
-  show (Arg val) = show val
 
 instance Show Command where
   show (Command    cmd args)           = cmd ++ " " ++ unwords (map show args)
