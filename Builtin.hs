@@ -14,7 +14,7 @@ module Builtin (
 import Prelude hiding (lookup, id)
 
 import Data.List hiding (delete, lookup, insert)
-import Data.Map hiding (map, foldr)
+import Data.Map hiding (map)
 import Data.IORef
 
 import System.Directory
@@ -162,7 +162,6 @@ cd' env (Str dir : _) = setCurrentDirectory dir >> setVar env "PWD" (Str dir) >>
 cd' _   _             = retErr "usage: cd [DIR]"
 
 -- List files in current directory
--- ls' env _ = getCurrentDirectory >>= getDirectoryContents >>= retSuc . unlines . sort
 ls' :: UtilityType
 ls' _ _ =
   getCurrentDirectory >>=
@@ -177,6 +176,7 @@ read' _ _              = retErr "usage: read FILE"
 -- Write to file or standard output
 write' :: UtilityType
 write' _ (Str file : Str input : _) = writeFile file input >> void
+write' _ (Str file : input     : _) = writeFile file (show input) >> void
 write' _ _                          = retErr "usage: write file input"
 
 -- Sort a list

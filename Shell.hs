@@ -8,8 +8,9 @@ module Shell (
 
 import Prelude hiding (lookup)
 
-import Data.Map hiding (map)
+import Data.Map hiding (map, null)
 import Data.List hiding (lookup)
+import Control.Monad hiding (void)
 
 import System.Exit
 import System.Process (readProcessWithExitCode)
@@ -40,7 +41,7 @@ run :: Env -> PipeLine -> IO String
 run env (Pipe cmds) = do
   Result { out = out, err = err, stat = stat } <- invoke' env cmds
   setVar env "PIPESTATUS" (List $ map (Int . fromExitCode) stat)
-  putStrLn err
+  when (not (null err)) $ putStrLn err
   return $ show out
 
 -- Invoke a single command

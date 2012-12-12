@@ -33,31 +33,37 @@ TySh> date | set TEST
 TySh> date | tr a-z A-Z
 ```
 
-## Example (old)
+## Demo
 ```bash
-TySh> cd /tmp
-Pipe [Command "cd" ["/tmp"] []]
-
-TySh> pwd
-Pipe [Command "pwd" [] []]
+[baldur@ed-3358-14 TySh]$ runghc Tysh.hs 
+Welcome to TySh! Use 'quit' or 'q' exit the shell.
+:TySh> get USER
+baldur
+0:TySh> set PS1 "Example> "
+0:Example> cd /tmp
+0:Example> get PWD
 /tmp
-
-TySh> date | tr a-z A-Z
-Pipe [Command "date" [] [],Command "tr" ["a-z","A-Z"] []]
-TUE DEC  4 23:40:30 CET 2012
-
-TySh> get PATH | xargs -n1 | tr a-z A-Z
-Pipe [Command "get" ["PATH"] [],Command "xargs" ["-n1"] [],Command "tr" ["a-z","A-Z
-/CHALMERS/USERS/-----/.CABAL/BIN
-/BIN
-/USR/BIN
-/USR/SBIN
-...
-
-TySh> set PS1 shell>
-Pipe [Command "set" ["PS1","shell>"] []]
-
-shell> 
+0:Example> pwd
+/tmp
+0:Example> ls
+<file> ...
+0:Example> ls | take 5
+orbit-forerik cupsla4yE0 cups9LF16X cupsloKtuu host_0
+0 0:Example> ls | take 5 | sort 
+cups9LF16X cupsla4yE0 cupsloKtuu host_0 orbit-forerik
+0 0 0:Example> ls | take 5 | sort | write ls-output
+0 0 0 0:Example> read ls-output
+cups9LF16X cupsla4yE0 cupsloKtuu host_0 orbit-forerik
+0:Example> date 
+Wed Dec 12 10:42:29 CET 2012
+0:Example> date | set today'sdate
+0 0:Example> get today'sdate
+Wed Dec 12 10:42:38 CET 2012
+0:Example> get today'sdate | tr a-z A-Z
+WED DEC 12 10:42:38 CET 2012
+0 0:Example> get todays'date | take 5 | write testing
+usage: write file input
+0 2 2:Example> get PIPESTATUS
+0 2 2
+0:Example>
 ```
-
-
