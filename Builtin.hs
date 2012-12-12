@@ -233,7 +233,7 @@ getDefault envRef id def = do
 
 envInit :: Env -> IO ()
 envInit env = do
-  setVar env "PS1" (Str "TySh>")
+  setVar env "PS1" (Str "TySh> ")
   getHomeDirectory >>= setVar env "HOME" . Str
   getEnv "USER"    >>= setVar env "USER" . Str
   getEnv "PATH"    >>= setVar env "PATH" . List . map Str . splitBy ':'

@@ -6,10 +6,22 @@ import Text.ParserCombinators.Parsec
 import Prelude hiding (words)
 
 import Shell
-
 import Builtin
 
--- Internal return type from parsing stage
+------------------------------------------------------------------------------
+-- Examples
+------------------------------------------------------------------------------
+
+-- valid
+-- c1 arg "hello world" | c2 | c3 arg
+-- c1 arg arg :: Type1 | c2 :: Type2 | c3 arg
+
+-- invalid
+-- c1 arg arg | c2 |
+-- c1 arg arg :: | c2 :: t2 | c3 arg
+
+------------------------------------------------------------------------------
+
 type ParsedCommand = ([String], [String]) -- (fun:args, annotation)
 
 -- Create PipeLine from parser output
@@ -80,15 +92,3 @@ parseInput input =
   case parse pipeLine "<interactive>" input of 
     Left  err -> Left err
     Right val -> Right (convert val)
-
-------------------------------------------------------------------------------
--- Testing
-------------------------------------------------------------------------------
-
--- -- valid
--- t1 = "c1 arg \"hello world\" | c2 | c3 arg"
--- t2 = "c1 arg arg :: Type One | c2 :: Type2 | c3 arg"
-
--- -- invalid
--- x1 = "c1 arg arg | c2 | "
--- x2 = "c1 arg arg :: | c2 :: t2 | c3 arg"

@@ -51,6 +51,7 @@ invoke env (Command cmd args) =
   case lookup cmd builtin of
     Just (Utility fn _) -> fn env args 
     Nothing -> do
+      -- Treat last argument as STDIN
       let (stdin,args') = case length args of 
             0 -> ("",[])
             _ -> (show $ last args, map show $ init args)
